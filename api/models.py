@@ -14,6 +14,8 @@ class Hobbies(models.Model):
     name = models.CharField(max_length=30)
     description = models.CharField(max_length=100)
 
+    REQUIRED_FIELDS = ['name', 'description']
+
     def __str__(self):
         return f"{self.name} - {self.description}"
 

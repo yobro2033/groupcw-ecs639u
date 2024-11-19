@@ -56,7 +56,7 @@ def process_common_hobbies(request, other_users, current_user_hobbies):
             'users': list(paginated_users),
         }
 
-        return JsonResponse({'result': response_data, 'success': 'true'})
+        return JsonResponse({'result': response_data, 'success': 'true'}, status=200)
     except Exception as e:
         print('[ERROR] @ process_common_hobbies: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
@@ -67,7 +67,7 @@ def get_hobbies(request: HttpRequest) -> JsonResponse:
         if request.method == 'GET':
             hobbies = Hobbies.objects.all()
             hobbies_list = [Hobby(h.name, h.description).to_dict() for h in hobbies]
-            return JsonResponse({'result': hobbies_list, 'success': 'true'})
+            return JsonResponse({'result': hobbies_list, 'success': 'true'}, status=200)
         else:
             return Response({'error': 'Method not allowed', 'success': 'false'}, status=405)
     except Exception as e:
@@ -104,7 +104,7 @@ def get_user_profile(request: HttpRequest, user_id: int) -> JsonResponse:
             'profile_image': user.profile_image.url,
             'hobbies': list(user.hobbies.values('name', 'description'))
         }
-        return JsonResponse({'result': user_data, 'success': 'true'})
+        return JsonResponse({'result': user_data, 'success': 'true'}, status=200)
     else:
         return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
 
@@ -129,7 +129,7 @@ def send_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
         current_user.sent_requests.add(friend)
         friend.pending_requests.add(current_user)
 
-        return JsonResponse({'result': 'Friend request sent', 'success': 'true'})
+        return JsonResponse({'result': 'Friend request sent', 'success': 'true'}, status=200)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -147,7 +147,7 @@ def accept_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
         current_user.friends.add(friend)
         friend.friends.add(current_user)
 
-        return JsonResponse({'result': 'Friend request accepted', 'success': 'true'})
+        return JsonResponse({'result': 'Friend request accepted', 'success': 'true'}, status=200)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -165,7 +165,7 @@ def reject_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
             current_user.pending_requests.remove(friend)
             friend.sent_requests.remove(current_user)
 
-            return JsonResponse({'result': 'Friend request rejected', 'success': 'true'})
+            return JsonResponse({'result': 'Friend request rejected', 'success': 'true'}, status=200)
     except Exception as e:
         print('[ERROR] @ reject_friend_request: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
@@ -188,7 +188,7 @@ def get_friends(request: HttpRequest) -> JsonResponse:
                 }
                 for friend in friends
             ]
-            return JsonResponse({'result': friend_list, 'success': 'true'})
+            return JsonResponse({'result': friend_list, 'success': 'true'}, status=200)
     except Exception as e:
         print('[ERROR] @ get_friends: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
@@ -211,7 +211,7 @@ def get_friend_requests(request: HttpRequest) -> JsonResponse:
                 }
                 for friend in friend_requests
             ]
-            return JsonResponse({'result': friend_request_list, 'success': 'true'})
+            return JsonResponse({'result': friend_request_list, 'success': 'true'}, status=200)
     except Exception as e:
         print('[ERROR] @ get_friend_requests: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
@@ -234,7 +234,7 @@ def get_sent_requests(request: HttpRequest) -> JsonResponse:
                 }
                 for friend in sent_requests
             ]
-            return JsonResponse({'result': sent_request_list, 'success': 'true'})
+            return JsonResponse({'result': sent_request_list, 'success': 'true'}, status=200)
     except Exception as e:
         print('[ERROR] @ get_sent_requests: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
@@ -255,7 +255,7 @@ def remove_friend(request: HttpRequest, user_id: int) -> JsonResponse:
             current_user.friends.remove(friend)
             friend.friends.remove(current_user)
 
-            return JsonResponse({'result': 'Friend removed', 'success': 'true'})
+            return JsonResponse({'result': 'Friend removed', 'success': 'true'}, status=204)
     except Exception as e:
         print('[ERROR] @ remove_friend: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
@@ -276,7 +276,7 @@ def remove_sent_request(request: HttpRequest, user_id: int) -> JsonResponse:
             current_user.sent_requests.remove(friend)
             friend.pending_requests.remove(current_user)
 
-            return JsonResponse({'result': 'Sent request removed', 'success': 'true'})
+            return JsonResponse({'result': 'Sent request removed', 'success': 'true'}, status=204)
     except Exception as e:
         print('[ERROR] @ remove_sent_request: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
@@ -297,7 +297,7 @@ def remove_received_request(request: HttpRequest, user_id: int) -> JsonResponse:
             current_user.pending_requests.remove(friend)
             friend.sent_requests.remove(current_user)
 
-            return JsonResponse({'result': 'Received request removed', 'success': 'true'})
+            return JsonResponse({'result': 'Received request removed', 'success': 'true'}, status=204)
     except Exception as e:
         print('[ERROR] @ remove_received_request: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
@@ -322,7 +322,7 @@ def update_profile(request: HttpRequest) -> JsonResponse:
 
             current_user.save()
 
-            return JsonResponse({'result': 'Profile updated', 'success': 'true'})
+            return JsonResponse({'result': 'Profile updated', 'success': 'true'}, status=200)
     except Exception as e:
         print('[ERROR] @ update_profile: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
@@ -344,11 +344,11 @@ def update_profile(request: HttpRequest) -> JsonResponse:
 #
 #        return JsonResponse({'result': 'Profile image updated', 'success': 'true'})
 
-@api_view(['PUT'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request: HttpRequest) -> JsonResponse:
     try:
-        if request.method != 'PUT':
+        if request.method != 'POST':
             return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
         else:
             current_user = request.user
@@ -359,16 +359,16 @@ def change_password(request: HttpRequest) -> JsonResponse:
                 return JsonResponse({'error': 'Incorrect old password', 'success': 'false'}, status=400)
             current_user.set_password(data.get('new_password'))
             current_user.save()
-            return JsonResponse({'result': 'Password changed', 'success': 'true'})
+            return JsonResponse({'result': 'Password changed', 'success': 'true'}, status=200)
     except Exception as e:
         print('[ERROR] @ change_password: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
-@api_view(['POST'])
+@api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def create_new_hobby(request: HttpRequest) -> JsonResponse:
     try:
-        if request.method != 'POST':
+        if request.method != 'PUT':
             return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
         else:
             try:
@@ -376,7 +376,7 @@ def create_new_hobby(request: HttpRequest) -> JsonResponse:
                 form = HobbiesForm(data)
                 if form.is_valid():
                     form.save()
-                    return JsonResponse({'result': 'New hobby created', 'success': 'true'})
+                    return JsonResponse({'result': 'New hobby created', 'success': 'true'}, status=201)
                 return JsonResponse(form.errors, status=400)
             except json.JSONDecodeError:
                 return JsonResponse({'error': 'Invalid JSON format'}, status=400)
