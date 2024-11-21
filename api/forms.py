@@ -6,7 +6,7 @@ from .models import User, Hobbies
 class UserCreateForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'date_of_birth', 'password1', 'password2', 'hobbies']
+        fields = ['username', 'first_name', 'last_name', 'email', 'date_of_birth', 'password', 'hobbies']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter username'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter first name'}),
@@ -16,8 +16,7 @@ class UserCreateForm(UserCreationForm):
                 attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'Enter date of birth'}
             ),
             'hobbies': forms.CheckboxSelectMultiple(),
-            'password1': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter password'}),
-            'password2': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm password'}),
+            'password': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter password'}),
         }
 
 class UserEditForm(forms.ModelForm):
@@ -56,11 +55,9 @@ class UserEditForm(forms.ModelForm):
 class PasswordEditForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['old_password', 'new_password', 'new_password_confirm']
+        fields = ['password']
         widgets = {
-            'old_password': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter old password'}),
-            'new_password': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter new password'}),
-            'new_password_confirm': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm new password'}),
+            'password': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter new password'})
         }
 
 class HobbiesForm(forms.ModelForm):

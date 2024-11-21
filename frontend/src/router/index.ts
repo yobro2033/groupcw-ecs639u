@@ -17,6 +17,9 @@ const router = createRouter({
     routes: [
         { path: '/', name: 'Main Page', component: MainPage },
         { path: '/other/', name: 'Other Page', component: OtherPage },
+        { path: '/login', name: 'Login', component: () => import('../pages/Login.vue') },
+        { path: '/signup', name: 'Register', component: () => import('../pages/Signup.vue') },
+        { path: '/dashboard', name: 'Dashboard', component: () => import('../pages/Dashboard.vue') },
     ]
 })
 

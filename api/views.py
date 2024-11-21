@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django.utils.timezone import datetime
 from .forms import UserCreateForm, UserEditForm, PasswordEditForm, HobbiesForm
+from rest_framework.authtoken.models import Token
 
 def main_spa(request: HttpRequest) -> HttpResponse:
     return render(request, 'api/spa/index.html', {})
@@ -60,6 +61,18 @@ def process_common_hobbies(request, other_users, current_user_hobbies):
     except Exception as e:
         print('[ERROR] @ process_common_hobbies: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+
+@api_view(['GET'])
+def login_view(request: HttpRequest) -> HttpResponse:
+    return render(request, 'templates/registration/login.html', {})
+
+@api_view(['GET'])
+def logout_view(request: HttpRequest) -> HttpResponse:
+    return render(request, 'templates/registration/login.html', {})
+
+@api_view(['GET'])
+def register_view(request: HttpRequest) -> HttpResponse:
+    return render(request, 'templates/registration/signup.html', {})
 
 @api_view(['GET'])
 def get_hobbies(request: HttpRequest) -> JsonResponse:
@@ -414,4 +427,54 @@ def search_users(request: HttpRequest) -> JsonResponse:
             return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
     except Exception as e:
         print('[ERROR] @ search_users: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+
+@api_view(['POST'])
+def login(request):
+    try:
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            username = data.get('username')
+            password = data.get('password')
+            user = User.objects.get(username=username)
+            if user.check_password(password):
+                token, created = Token.objects.get_or_create(user=user)
+                return JsonResponse({'result': {'message': 'Successfully logged in!', 'access_token': token.key}, 'success': 'true'}, status=200)
+            return JsonResponse({'error': 'Invalid credentials', 'success': 'false'}, status=400)
+        else:
+            return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
+    except Exception as e:
+        print('[ERROR] @ login: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+
+@api_view(['POST'])
+def sign_up(request):
+    try:
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            form = UserCreateForm(data)
+            if form.is_valid():
+                new_user = form.save()
+                user = User.objects.get(id=new_user.id)
+                token, created = Token.objects.get_or_create(user=user)
+                return JsonResponse({'result': {'message': 'Successfully created an account!', 'access_token': token.key}, 'success': 'true'}, status=201)
+            return JsonResponse(form.errors, status=400)
+        else:
+            return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
+    except Exception as e:
+        print('[ERROR] @ sign_up: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+
+@api_view(['POST'])
+def logout(request):
+    try:
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            token = data.get('access_token')
+            Token.objects.filter(key=token).delete()
+            return JsonResponse({'result': 'Successfully logged out', 'success': 'true'}, status=200)
+        else:
+            return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
+    except Exception as e:
+        print('[ERROR] @ logout: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
