@@ -6,7 +6,14 @@ from .models import User, Hobbies
 class UserCreateForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'date_of_birth', 'password', 'hobbies']
+        fields = [
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+            'date_of_birth',
+            'hobbies',
+        ]
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter username'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter first name'}),
@@ -16,8 +23,13 @@ class UserCreateForm(UserCreationForm):
                 attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'Enter date of birth'}
             ),
             'hobbies': forms.CheckboxSelectMultiple(),
-            'password': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter password'}),
         }
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if commit:
+            user.save()
+        return user
 
 class UserEditForm(forms.ModelForm):
     class Meta:

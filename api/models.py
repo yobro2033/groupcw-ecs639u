@@ -21,16 +21,16 @@ class Hobbies(models.Model):
 
 class User(AbstractUser):
     id = models.AutoField(primary_key=True)
-    profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default.jpg')
+    profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default.jpg', blank=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     email = models.EmailField(max_length=254)
     date_of_birth = models.DateField()
     password = models.CharField(max_length=30)
-    hobbies = models.ManyToManyField(Hobbies, default=None)
-    friends = models.ManyToManyField('self', default=None)
-    pending_requests = models.ManyToManyField('self', default=None)
-    sent_requests = models.ManyToManyField('self', default=None)
+    hobbies = models.ManyToManyField(Hobbies, default=None, blank=True)
+    friends = models.ManyToManyField('self', default=None, blank=True)
+    pending_requests = models.ManyToManyField('self', default=None, blank=True)
+    sent_requests = models.ManyToManyField('self', default=None, blank=True)
 
     REQUIRED_FIELDS = ['first_name', 'last_name', 'email', 'date_of_birth', 'password']
 

@@ -1,33 +1,41 @@
 <template>
     <main class="container pt-4">
-        <div>
-            <router-link
-                class=""
-                :to="{name: 'Main Page'}"
-            >
-                Main Page
-            </router-link>
-            |
-            <router-link
-                class=""
-                :to="{name: 'Other Page'}"
-            >
-                Other Page
-            </router-link>
+      <div id="app">
+        <div v-if="userStore.username">
+          <NavBar2 />
         </div>
-        <RouterView class="flex-shrink-0" />
+        <div v-else>
+          <NavBar />
+        </div>
+        <router-view/>
+      </div>
     </main>
-</template>
-
-<script lang="ts">
-import { defineComponent } from "vue";
-import { RouterView } from "vue-router";
-
-export default defineComponent({
-    components: { RouterView },
-});
-
-</script>
-
-<style scoped>
-</style>
+  </template>
+  
+  <script lang="ts">
+  
+  import { defineComponent } from "vue";
+  import { RouterView } from "vue-router";
+  import NavBar from './pages/components/NavBar.vue';
+  import NavBar2 from './pages/components/NavBar2.vue';
+  import { useUserStore } from "../stores/auth";
+  
+  
+  export default defineComponent({
+    components: {
+      RouterView,
+      NavBar,
+      NavBar2,
+    },
+    setup(){
+            const userStore = useUserStore();
+            return { userStore };
+          }
+  
+    
+  });
+  </script>
+  
+  <style scoped>
+  </style>
+  

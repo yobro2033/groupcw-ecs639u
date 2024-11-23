@@ -22,9 +22,15 @@ from . import views
 
 urlpatterns = [
 
-    path('', views.main_spa, name='main_spa'),
+    #path('', views.main_spa, name='main_spa'),
+    path('', views.home,name='home'),
 
     path('api/hobbies/', views.get_hobbies, name='get_hobbies'),
+    path('api/hobbies/add/', views.create_new_hobby, name='create_new_hobby'),
+
+    path('api/login/', views.login, name='login'),
+    path('api/logout/', views.logout, name='logout'),
+    path('api/register/', views.sign_up, name='register'),
 
     path('api/match_users_by_hobbies/', views.match_users_by_hobbies, name='match_users_by_hobbies'), # params: page
     path('api/user/<int:user_id>/', views.get_user_profile, name='get_user_profile'),

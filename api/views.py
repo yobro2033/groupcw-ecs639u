@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpRequest, JsonResponse
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, BasePermission
 from .models import User, Hobbies
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
@@ -62,6 +62,9 @@ def process_common_hobbies(request, other_users, current_user_hobbies):
         print('[ERROR] @ process_common_hobbies: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
+def home(request):
+    return render(request,'App.vue')
+
 @api_view(['GET'])
 def login_view(request: HttpRequest) -> HttpResponse:
     return render(request, 'templates/registration/login.html', {})
@@ -75,11 +78,15 @@ def register_view(request: HttpRequest) -> HttpResponse:
     return render(request, 'templates/registration/signup.html', {})
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def get_hobbies(request: HttpRequest) -> JsonResponse:
     try:
         if request.method == 'GET':
             hobbies = Hobbies.objects.all()
-            hobbies_list = [Hobby(h.name, h.description).to_dict() for h in hobbies]
+            #hobbies_list = [Hobby(h.name, h.description).to_dict() for h in hobbies]
+            # hobbies_list return inside result contain id and name only
+            hobbies_list = list(hobbies.values('id', 'name'))
+            print(hobbies_list)
             return JsonResponse({'result': hobbies_list, 'success': 'true'}, status=200)
         else:
             return Response({'error': 'Method not allowed', 'success': 'false'}, status=405)
@@ -385,7 +392,9 @@ def create_new_hobby(request: HttpRequest) -> JsonResponse:
             return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
         else:
             try:
-                data = json.loads(request.data)
+                json_data = json.dumps(request.data)
+                data = json.loads(json_data)
+                print(f"Form Data: {data}")
                 form = HobbiesForm(data)
                 if form.is_valid():
                     form.save()
@@ -430,6 +439,7 @@ def search_users(request: HttpRequest) -> JsonResponse:
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
 @api_view(['POST'])
+@permission_classes([BasePermission])
 def login(request):
     try:
         if request.method == 'POST':
@@ -439,7 +449,7 @@ def login(request):
             user = User.objects.get(username=username)
             if user.check_password(password):
                 token, created = Token.objects.get_or_create(user=user)
-                return JsonResponse({'result': {'message': 'Successfully logged in!', 'access_token': token.key}, 'success': 'true'}, status=200)
+                return JsonResponse({'result': {'message': 'Successfully logged in!', 'access_token': token.key, 'user': username}, 'success': 'true'}, status=200)
             return JsonResponse({'error': 'Invalid credentials', 'success': 'false'}, status=400)
         else:
             return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
@@ -448,16 +458,17 @@ def login(request):
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
 @api_view(['POST'])
+@permission_classes([BasePermission])
 def sign_up(request):
     try:
         if request.method == 'POST':
             data = json.loads(request.body)
+            email = data.get('email')
+            data.update({'username': email})
             form = UserCreateForm(data)
             if form.is_valid():
                 new_user = form.save()
-                user = User.objects.get(id=new_user.id)
-                token, created = Token.objects.get_or_create(user=user)
-                return JsonResponse({'result': {'message': 'Successfully created an account!', 'access_token': token.key}, 'success': 'true'}, status=201)
+                return JsonResponse({'result': {'message': 'Successfully created an account!'}, 'success': 'true'}, status=201)
             return JsonResponse(form.errors, status=400)
         else:
             return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
@@ -466,11 +477,13 @@ def sign_up(request):
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def logout(request):
     try:
         if request.method == 'POST':
-            data = json.loads(request.body)
-            token = data.get('access_token')
+            headers = request.headers
+            print(headers)
+            token = headers.get('Authorization').split(' ')[1]
             Token.objects.filter(key=token).delete()
             return JsonResponse({'result': 'Successfully logged out', 'success': 'true'}, status=200)
         else:
