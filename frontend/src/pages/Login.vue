@@ -9,8 +9,8 @@
 
         <!-- Username Field -->
         <div class="form-group mb-3">
-          <label for="usernameInput" class="form-label">Username</label>
-          <input type="text" v-model="username" class="form-control" id="usernameInput" placeholder="Enter username" required>
+          <label for="usernameInput" class="form-label">Email</label>
+          <input type="text" v-model="username" class="form-control" id="usernameInput" placeholder="Enter email" required>
         </div>
   
         <!-- Password Field -->
@@ -66,6 +66,7 @@
             var data = await signup.json() 
             const userStore = useUserStore();
             userStore.login(data.result.user, data.result.access_token)
+            console.log(userStore.username)
             this.token = data.result.access_token
             router.push({ path: '/'})
           },

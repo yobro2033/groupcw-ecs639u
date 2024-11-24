@@ -29,8 +29,8 @@ class User(AbstractUser):
     password = models.CharField(max_length=30)
     hobbies = models.ManyToManyField(Hobbies, default=None, blank=True)
     friends = models.ManyToManyField('self', default=None, blank=True)
-    pending_requests = models.ManyToManyField('self', default=None, blank=True)
-    sent_requests = models.ManyToManyField('self', default=None, blank=True)
+    pending_requests = models.ManyToManyField('self', default=None, blank=True, symmetrical=False, related_name='incoming_requests')
+    sent_requests = models.ManyToManyField('self', default=None, blank=True, symmetrical=False, related_name='outgoing_requests')
 
     REQUIRED_FIELDS = ['first_name', 'last_name', 'email', 'date_of_birth', 'password']
 

@@ -34,8 +34,9 @@ urlpatterns = [
 
     path('api/match_users_by_hobbies/', views.match_users_by_hobbies, name='match_users_by_hobbies'), # params: page
     path('api/user/<int:user_id>/', views.get_user_profile, name='get_user_profile'),
+    path('api/my_profile', views.get_my_profile, name='get_my_profile'),
 
-    path('api/users', views.search_users, name='search_users'), # params: name, email, l_age (lower bound age), u_age (upper bound age), page  |  method: GET
+    path('api/users/', views.search_users, name='search_users'), # params: name, email, l_age (lower bound age), u_age (upper bound age), page  |  method: GET
 
     path('api/friends/', views.get_friends, name='get_friends'),
     path('api/friend_requests/', views.get_friend_requests, name='get_friend_requests'),

@@ -38,7 +38,7 @@ def process_common_hobbies(request, other_users, current_user_hobbies):
                 'last_name': user.last_name,
                 'profile_image': user.profile_image.url,
                 'common_hobby_count': len(common_hobbies),
-                'hobbies': list(user.hobbies.values('name', 'description'))
+                'hobbies': list(user.hobbies.values('id', 'name'))
             })
 
         user_matches.sort(key=lambda x: (-x['common_hobby_count'], x['first_name']))
@@ -122,7 +122,25 @@ def get_user_profile(request: HttpRequest, user_id: int) -> JsonResponse:
             'last_name': user.last_name,
             'date_of_birth': user.date_of_birth,
             'profile_image': user.profile_image.url,
-            'hobbies': list(user.hobbies.values('name', 'description'))
+            'hobbies': list(user.hobbies.values('id', 'name'))
+        }
+        return JsonResponse({'result': user_data, 'success': 'true'}, status=200)
+    else:
+        return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_my_profile(request: HttpRequest) -> JsonResponse:
+    if request.method == 'GET':
+        user = request.user
+        user_data = {
+            'id': user.id,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'date_of_birth': user.date_of_birth,
+            'profile_image': user.profile_image.url,
+            'hobbies': list(user.hobbies.values('id', 'name'))
         }
         return JsonResponse({'result': user_data, 'success': 'true'}, status=200)
     else:
@@ -145,9 +163,17 @@ def send_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
 
         if friend in current_user.pending_requests.all():
             return JsonResponse({'error': 'Friend request already received', 'success': 'false'}, status=400)
+        
+        print(f"Current User: {current_user}", f"Friend: {friend}")
+
+        print(f"Current User Sent Requests: {current_user.sent_requests.all()}", f"Current User Pending Requests: {current_user.pending_requests.all()}")
+        print(f"Friend Sent Requests: {friend.sent_requests.all()}", f"Friend Pending Requests: {friend.pending_requests.all()}")
 
         current_user.sent_requests.add(friend)
         friend.pending_requests.add(current_user)
+
+        print(f"Current User Sent Requests: {current_user.sent_requests.all()}", f"Current User Pending Requests: {current_user.pending_requests.all()}")
+        print(f"Friend Sent Requests: {friend.sent_requests.all()}", f"Friend Pending Requests: {friend.pending_requests.all()}")
 
         return JsonResponse({'result': 'Friend request sent', 'success': 'true'}, status=200)
 
@@ -412,17 +438,15 @@ def search_users(request: HttpRequest) -> JsonResponse:
     try:
         if request.method == 'GET':
             params = request.GET
-            email = params.get('email')
-            name = params.get('name')
+            search_kw = params.get('search')
             l_age = params.get('l_age')
             u_age = params.get('u_age')
             users = User.objects.exclude(id=request.user.id)
             current_user = request.user
             current_user_hobbies = set(current_user.hobbies.values_list('id', flat=True))
-            if email:
-                users = users.filter(email__icontains=email)
-            if name:
-                users = users.filter(first_name__icontains=name) | users.filter(last_name__icontains=name)
+            if search_kw:
+                # filter if first_name, last_name, email contains search_kw, this includes contains part of the string
+                users = users.filter(first_name__icontains=search_kw) | users.filter(last_name__icontains=search_kw) | users.filter(email__icontains=search_kw)
             if l_age:
                 current_year = datetime.now().year
                 l_year = current_year - int(l_age)
@@ -431,7 +455,7 @@ def search_users(request: HttpRequest) -> JsonResponse:
                 current_year = datetime.now().year
                 u_year = current_year - int(u_age)
                 users = users.filter(date_of_birth__gte=f'{u_year}-01-01')
-            process_common_hobbies(request, users, current_user_hobbies)
+            return process_common_hobbies(request, users, current_user_hobbies)
         else:
             return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
     except Exception as e:

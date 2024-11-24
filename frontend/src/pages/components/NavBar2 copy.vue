@@ -15,14 +15,12 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
         <ul class="navbar-nav">
-          <!-- Friend Requests Dropdown -->
           <li class="nav-item">
             <div class="dropdown-container" v-click-outside="closeDropdown">
               <button @click="toggleDropdown" class="nav-link dropdown-button">
                 Friend Requests
               </button>
               <div v-if="showDropdown" class="dropdown-box">
-                <!-- Tab Buttons -->
                 <div class="tab-buttons">
                   <button
                     :class="{ active: activeTab === 'received' }"
@@ -37,169 +35,62 @@
                     Sent Requests
                   </button>
                 </div>
-                <!-- Requests List -->
-                <div class="requests-list">
-                  <div
+                <ul>
+                  <li
                     v-for="request in requests"
                     :key="request.id"
-                    class="request-card"
+                    class="request-item"
                   >
                     <img
                       :src="request.profile_image"
                       alt="Profile"
                       class="profile-image"
                     />
-                    <div class="request-details">
-                      <p class="name">
-                        {{ request.first_name }} {{ request.last_name }}
-                      </p>
-                      <p class="email">{{ request.email }}</p>
-                    </div>
+                    <span>
+                      {{ request.first_name }} {{ request.last_name }}
+                    </span>
                     <div class="action-buttons">
                       <button
                         v-if="activeTab === 'received'"
                         @click="acceptRequest(request.id)"
-                        class="btn btn-success btn-sm"
+                        class="btn btn-success"
                       >
                         Accept
                       </button>
                       <button
                         v-if="activeTab === 'received'"
                         @click="rejectRequest(request.id)"
-                        class="btn btn-danger btn-sm"
+                        class="btn btn-danger"
                       >
                         Reject
                       </button>
                       <button
                         v-if="activeTab === 'sent'"
                         @click="cancelRequest(request.id)"
-                        class="btn btn-warning btn-sm"
+                        class="btn btn-warning"
                       >
                         Cancel
                       </button>
                     </div>
-                  </div>
-                </div>
-                <!-- No Requests Message -->
-                <p v-if="requests.length === 0" class="no-requests">
-                  No requests available.
-                </p>
+                  </li>
+                </ul>
+                <p v-if="requests.length === 0">No requests available.</p>
               </div>
             </div>
           </li>
-          <!-- Other Links -->
           <li>
             <router-link class="nav-link" to="/dashboard">Profile Page</router-link>
           </li>
-          <li>
-            <router-link class="nav-link" to="/search">Search</router-link>
-          </li>
-          <li class="nav-item nav-link nav-bar-item" @click="logout()">
-            Sign out
-          </li>
+          <li class="nav-item nav-link nav-bar-item" @click="logout()">Sign out</li>
         </ul>
       </div>
     </div>
   </nav>
 </template>
 
-<style scoped>
-/* Navbar Styles */
-.nav-bar-item:hover {
-  cursor: pointer;
-}
-.dropdown-container {
-  position: relative;
-}
-.dropdown-button {
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-}
-.dropdown-box {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  width: 350px;
-  padding: 15px;
-}
-.tab-buttons {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 10px;
-}
-.tab-buttons button {
-  background-color: #f8f9fa;
-  border: none;
-  padding: 5px 10px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
-}
-.tab-buttons button:hover {
-  background-color: #e2e6ea;
-}
-.tab-buttons .active {
-  font-weight: bold;
-  background-color: #e2e6ea;
-}
-.requests-list {
-  max-height: 300px;
-  overflow-y: auto;
-}
-.request-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: #f8f9fa;
-  transition: box-shadow 0.3s ease;
-}
-.request-card:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-}
-.profile-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  margin-right: 10px;
-}
-.request-details {
-  flex-grow: 1;
-  margin-left: 10px;
-}
-.request-details .name {
-  font-weight: bold;
-  margin: 0;
-}
-.request-details .email {
-  font-size: 0.9rem;
-  color: #6c757d;
-}
-.action-buttons {
-  display: flex;
-  gap: 5px;
-}
-.no-requests {
-  text-align: center;
-  color: #6c757d;
-  margin-top: 10px;
-}
-</style>
-
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, ref, onMounted } from "vue";
 import router from "../../router";
-import { useUserStore } from "../../../stores/auth";
 
 export default defineComponent({
   data() {
@@ -208,10 +99,6 @@ export default defineComponent({
       activeTab: "received",
       requests: [],
     };
-  },
-  setup() {
-    const userStore = useUserStore();
-    return { userStore };
   },
   methods: {
     toggleDropdown() {
@@ -227,12 +114,12 @@ export default defineComponent({
     async fetchRequests() {
       const endpoint =
         this.activeTab === "received"
-          ? "http://127.0.0.1:8000/api/friend_requests/"
-          : "http://127.0.0.1:8000/api/sent_requests/";
+          ? "/api/friend_requests/"
+          : "/api/sent_requests/";
       try {
         const response = await fetch(endpoint, {
           headers: {
-            Authorization: "Token " + this.userStore.token,
+            Authorization: "Token " + this.$store.state.token,
           },
         });
         const data = await response.json();
@@ -246,32 +133,20 @@ export default defineComponent({
       }
     },
     async acceptRequest(id) {
-      await this.handleRequest(
-        `http://127.0.0.1:8000/api/friend_request/accept/${id}/`,
-        "Accepted",
-        "POST"
-      );
+      await this.handleRequest(`/api/friend_request/accept/${id}/`, "Accepted");
     },
     async rejectRequest(id) {
-      await this.handleRequest(
-        `http://127.0.0.1:8000/api/friend_request/reject/${id}/`,
-        "Rejected",
-        "PUT"
-      );
+      await this.handleRequest(`/api/friend_request/reject/${id}/`, "Rejected");
     },
     async cancelRequest(id) {
-      await this.handleRequest(
-        `http://127.0.0.1:8000/api/sent_request/remove/${id}/`,
-        "Canceled",
-        "DELETE"
-      );
+      await this.handleRequest(`/api/sent_request/remove/${id}/`, "Canceled");
     },
-    async handleRequest(url, action, method) {
+    async handleRequest(url, action) {
       try {
         const response = await fetch(url, {
-          method,
+          method: "POST",
           headers: {
-            Authorization: "Token " + this.userStore.token,
+            Authorization: "Token " + this.$store.state.token,
           },
         });
         const data = await response.json();
@@ -290,22 +165,68 @@ export default defineComponent({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Token " + this.userStore.token,
+          Authorization: "Token " + this.$store.state.token, // Assuming Vuex store holds the token
         },
       };
-      const loggedOut = await fetch(
-        "http://127.0.0.1:8000/api/logout/",
-        requestOptions
-      );
-      const data = await loggedOut.json();
-      if (data.success === "true") {
-        alert("Logged out successfully");
-        this.userStore.logout();
-        router.push({ path: "/" });
-      } else {
-        console.error("Error logging out");
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/logout/", requestOptions);
+        const data = await response.json();
+        if (data.done) {
+          alert("Logged out successfully");
+          router.push("/");
+        } else {
+          alert("Failed to log out");
+        }
+      } catch (error) {
+        console.error("Logout error:", error);
       }
     },
   },
 });
 </script>
+
+<style scoped>
+.nav-bar-item:hover {
+  cursor: pointer;
+}
+.dropdown-container {
+  position: relative;
+}
+.dropdown-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+.dropdown-box {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  width: 300px;
+  padding: 10px;
+}
+.tab-buttons button {
+  margin-right: 5px;
+}
+.tab-buttons .active {
+  font-weight: bold;
+}
+.request-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.profile-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+.action-buttons button {
+  margin-left: 5px;
+}
+</style>
