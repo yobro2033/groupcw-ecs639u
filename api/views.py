@@ -32,13 +32,25 @@ def process_common_hobbies(request, other_users, current_user_hobbies):
         for user in other_users:
             user_hobbies = set(user.hobbies.values_list('id', flat=True))
             common_hobbies = current_user_hobbies.intersection(user_hobbies)
+            isFriend = False
+            hasPendingRequest = False
+            hasSentRequest = False
+            if user in request.user.friends.all():
+                isFriend = True
+            if user in request.user.pending_requests.all():
+                hasPendingRequest = True
+            if user in request.user.sent_requests.all():
+                hasSentRequest = True
             user_matches.append({
                 'id': user.id,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'profile_image': user.profile_image.url,
                 'common_hobby_count': len(common_hobbies),
-                'hobbies': list(user.hobbies.values('id', 'name'))
+                'hobbies': list(user.hobbies.values('id', 'name')),
+                'isFriend': isFriend,
+                'hasPendingRequest': hasPendingRequest,
+                'hasSentRequest': hasSentRequest,
             })
 
         user_matches.sort(key=lambda x: (-x['common_hobby_count'], x['first_name']))
@@ -398,7 +410,8 @@ def change_password(request: HttpRequest) -> JsonResponse:
             return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
         else:
             current_user = request.user
-            data = json.loads(request.data)
+            rq_json = json.dumps(request.data)
+            data = json.loads(rq_json)
             if data.get('new_password') != data.get('new_password_confirm'):
                 return JsonResponse({'error': 'Passwords do not match', 'success': 'false'}, status=400)
             if not current_user.check_password(data.get('old_password')):
@@ -424,7 +437,9 @@ def create_new_hobby(request: HttpRequest) -> JsonResponse:
                 form = HobbiesForm(data)
                 if form.is_valid():
                     form.save()
-                    return JsonResponse({'result': 'New hobby created', 'success': 'true'}, status=201)
+                    # Get the id and name of the newly created hobby
+                    hobby = Hobbies.objects.get(name=data['name'])
+                    return JsonResponse({'result': {'id': hobby.id, 'name': hobby.name}, 'success': 'true'}, status=201)
                 return JsonResponse(form.errors, status=400)
             except json.JSONDecodeError:
                 return JsonResponse({'error': 'Invalid JSON format'}, status=400)

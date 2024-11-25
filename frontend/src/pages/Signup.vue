@@ -72,7 +72,7 @@ export default defineComponent({
       last_name: "",
       email: "",
       date_of_birth: "",
-      hobbyOptions: [], // Stores the list of all available hobbies
+      hobbyOptions: Array(), // Stores the list of all available hobbies // [] or Array()
       selectedHobbies: [], // Stores selected hobbies
       newHobby: "", // Holds the value of a new hobby being added
       password: "",

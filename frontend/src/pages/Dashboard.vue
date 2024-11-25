@@ -192,10 +192,14 @@ export default defineComponent({
         body: JSON.stringify(newHobby.value),
       });
       const data = await response.json();
-      hobbiesList.value.push(data.result);
-      editProfile.value.selectedHobbies.push(data.result);
-      newHobby.value = { name: "", description: "" };
-      showNewHobbyForm.value = false;
+      try {
+        hobbiesList.value.push(data.result);
+        editProfile.value.selectedHobbies.push(data.result);
+        newHobby.value = { name: "", id: "" };
+        showNewHobbyForm.value = false;
+      } catch (error) {
+        console.error("Failed to add new hobby:", error);
+      }
     };
 
     const changePassword = async () => {
@@ -206,8 +210,14 @@ export default defineComponent({
           Authorization: "Token " + useUserStore().token,
         },
         body: JSON.stringify(passwordForm.value),
+      }).then((response) => {
+        if (response.status === 200) {
+          alert("Password changed successfully!");
+          showChangePassword.value = false;
+        } else {
+          alert("Failed to change password. Please try again.");
+        }
       });
-      alert("Password changed successfully!");
       showChangePassword.value = false;
     };
 

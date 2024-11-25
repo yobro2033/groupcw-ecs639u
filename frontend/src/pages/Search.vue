@@ -1,51 +1,76 @@
 <template>
-    <div class="container mt-5">
-      <h1>Search Page</h1>
-      <div class="search-bar">
+  <div class="container mt-5">
+    <h1>Search Page</h1>
+    <div class="search-bar">
+      <input
+        type="text"
+        v-model="searchTerm"
+        @input="searchUsers"
+        placeholder="Search for a user"
+        class="form-control mb-3"
+      />
+      <div class="age-slider">
+        <label>Age Range: {{ l_age }} - {{ u_age }}</label>
         <input
-          type="text"
-          v-model="searchTerm"
+          type="range"
+          v-model="l_age"
+          :min="minAge"
+          :max="u_age"
           @input="searchUsers"
-          placeholder="Search for a user"
-          class="form-control mb-3"
         />
-        <div class="age-slider">
-          <label>Age Range: {{ l_age }} - {{ u_age }}</label>
-          <input
-            type="range"
-            v-model="l_age"
-            :min="minAge"
-            :max="u_age"
-            @input="searchUsers"
-          />
-          <input
-            type="range"
-            v-model="u_age"
-            :min="l_age"
-            :max="maxAge"
-            @input="searchUsers"
-          />
-        </div>
+        <input
+          type="range"
+          v-model="u_age"
+          :min="l_age"
+          :max="maxAge"
+          @input="searchUsers"
+        />
       </div>
-      <ul class="user-list">
-        <li v-for="user in users" :key="user.id" class="user-item">
-          <div class="user-info">
-            <router-link :to="'/profile/' + user.id" class="profile-link">
-              <img :src="user.profile_image" alt="Profile" class="profile-image" />
-              <span>{{ user.first_name }} {{ user.last_name }}</span>
-            </router-link>
-            <p>Common hobbies: {{ user.common_hobby_count }}</p>
-          </div>
+    </div>
+    <ul class="user-list">
+      <li v-for="user in users" :key="user.id" class="user-item">
+        <div class="user-info">
+          <router-link :to="'/profile/' + user.id" class="profile-link">
+            <img :src="user.profile_image" alt="Profile" class="profile-image" />
+            <span>{{ user.first_name }} {{ user.last_name }}</span>
+          </router-link>
+          <p>Common hobbies: {{ user.common_hobby_count }}</p>
+        </div>
+        <div>
           <button
+            v-if="user.isFriend"
+            class="btn btn-danger"
+            @click="removeFriend(user.id)"
+          >
+            Remove Friend
+          </button>
+          <button
+            v-else-if="user.hasSentRequest"
+            class="btn btn-warning"
+            @click="cancelFriendRequest(user.id)"
+          >
+            Cancel Request
+          </button>
+          <button
+            v-else-if="user.hasPendingRequest"
+            class="btn btn-success"
+            @click="acceptFriendRequest(user.id)"
+          >
+            Accept
+          </button>
+          <button
+            v-else
             class="btn btn-primary"
             @click="sendFriendRequest(user.id)"
           >
             Add Friend
           </button>
-        </li>
-      </ul>
-    </div>
-  </template>
+        </div>
+      </li>
+    </ul>
+  </div>
+</template>
+
   
   <style scoped>
   .container {
@@ -106,25 +131,18 @@
       const maxAge = 100;
   
       const searchUsers = async () => {
-        if (!searchTerm.value && l_age.value === minAge && u_age.value === maxAge) return;
-
-        if (searchTerm.value === "") {
-            searchTerm.value = "";
-        } else {
-    
-            const response = await fetch(
-            `http://localhost:8000/api/users/?search=${searchTerm.value}&l_age=${l_age.value}&u_age=${u_age.value}`,
-            {
-                method: "GET",
-                headers: {
-                "Content-Type": "application/json",
-                Authorization: "Token " + useUserStore().token,
-                },
-            }
-            );
-            const data = await response.json();
-            users.value = data.result.users || [];
-        }
+        const response = await fetch(
+          `http://localhost:8000/api/users/?search=${searchTerm.value}&l_age=${l_age.value}&u_age=${u_age.value}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Token " + useUserStore().token,
+            },
+          }
+        );
+        const data = await response.json();
+        users.value = data.result.users || [];
       };
   
       const sendFriendRequest = async (userId: number) => {
@@ -139,13 +157,72 @@
           }
         );
         alert("Friend request sent!");
+        searchUsers(); // Refresh the user list
+      };
+  
+      const cancelFriendRequest = async (userId: number) => {
+        // `http://127.0.0.1:8000/api/sent_request/remove/${id}/`
+        await fetch(
+          `http://localhost:8000/api/sent_request/remove/${userId}/`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Token " + useUserStore().token,
+            },
+          }
+        );
+        alert("Friend request canceled!");
+        searchUsers(); // Refresh the user list
+      };
+  
+      const acceptFriendRequest = async (userId: number) => {
+        await fetch(
+          `http://localhost:8000/api/friend_request/accept/${userId}/`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Token " + useUserStore().token,
+            },
+          }
+        );
+        alert("Friend request accepted!");
+        searchUsers(); // Refresh the user list
+      };
+  
+      const removeFriend = async (userId: number) => {
+        await fetch(
+          `http://localhost:8000/api/friend/remove/${userId}/`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Token " + useUserStore().token,
+            },
+          }
+        );
+        alert("Friend removed!");
+        searchUsers(); // Refresh the user list
       };
   
       // Watch for changes in searchTerm, l_age, or u_age and trigger search
       watch([searchTerm, l_age, u_age], searchUsers, { immediate: true });
   
-      return { searchTerm, l_age, u_age, users, minAge, maxAge, sendFriendRequest };
+      return {
+        searchTerm,
+        l_age,
+        u_age,
+        users,
+        minAge,
+        maxAge,
+        sendFriendRequest,
+        cancelFriendRequest,
+        acceptFriendRequest,
+        removeFriend,
+      };
     },
   });
   </script>
+  
   
