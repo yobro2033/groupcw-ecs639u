@@ -68,7 +68,7 @@
             userStore.login(data.result.user, data.result.access_token)
             console.log(userStore.username)
             this.token = data.result.access_token
-            router.push({ path: '/'})
+            router.push('/dashboard')
           },
         },
     })

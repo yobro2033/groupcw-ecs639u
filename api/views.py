@@ -98,7 +98,6 @@ def get_hobbies(request: HttpRequest) -> JsonResponse:
             #hobbies_list = [Hobby(h.name, h.description).to_dict() for h in hobbies]
             # hobbies_list return inside result contain id and name only
             hobbies_list = list(hobbies.values('id', 'name'))
-            print(hobbies_list)
             return JsonResponse({'result': hobbies_list, 'success': 'true'}, status=200)
         else:
             return Response({'error': 'Method not allowed', 'success': 'false'}, status=405)
@@ -176,16 +175,8 @@ def send_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
         if friend in current_user.pending_requests.all():
             return JsonResponse({'error': 'Friend request already received', 'success': 'false'}, status=400)
         
-        print(f"Current User: {current_user}", f"Friend: {friend}")
-
-        print(f"Current User Sent Requests: {current_user.sent_requests.all()}", f"Current User Pending Requests: {current_user.pending_requests.all()}")
-        print(f"Friend Sent Requests: {friend.sent_requests.all()}", f"Friend Pending Requests: {friend.pending_requests.all()}")
-
         current_user.sent_requests.add(friend)
         friend.pending_requests.add(current_user)
-
-        print(f"Current User Sent Requests: {current_user.sent_requests.all()}", f"Current User Pending Requests: {current_user.pending_requests.all()}")
-        print(f"Friend Sent Requests: {friend.sent_requests.all()}", f"Friend Pending Requests: {friend.pending_requests.all()}")
 
         return JsonResponse({'result': 'Friend request sent', 'success': 'true'}, status=200)
 
@@ -433,7 +424,6 @@ def create_new_hobby(request: HttpRequest) -> JsonResponse:
             try:
                 json_data = json.dumps(request.data)
                 data = json.loads(json_data)
-                print(f"Form Data: {data}")
                 form = HobbiesForm(data)
                 if form.is_valid():
                     form.save()
@@ -521,7 +511,6 @@ def logout(request):
     try:
         if request.method == 'POST':
             headers = request.headers
-            print(headers)
             token = headers.get('Authorization').split(' ')[1]
             Token.objects.filter(key=token).delete()
             return JsonResponse({'result': 'Successfully logged out', 'success': 'true'}, status=200)

@@ -131,7 +131,9 @@
       const maxAge = 100;
   
       const searchUsers = async () => {
-        const response = await fetch(
+        // check whether searchTerm is empty
+        if (searchTerm.value !== "") {
+          const response = await fetch(
           `http://localhost:8000/api/users/?search=${searchTerm.value}&l_age=${l_age.value}&u_age=${u_age.value}`,
           {
             method: "GET",
@@ -143,6 +145,7 @@
         );
         const data = await response.json();
         users.value = data.result.users || [];
+        };
       };
   
       const sendFriendRequest = async (userId: number) => {
