@@ -69,6 +69,7 @@
             console.log(userStore.username)
             this.token = data.result.access_token
             router.push('/dashboard')
+            alert('Login successful!')
           },
         },
     })

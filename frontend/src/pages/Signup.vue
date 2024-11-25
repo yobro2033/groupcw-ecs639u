@@ -140,6 +140,7 @@ export default defineComponent({
         if (loginResponse.ok) {
           userStore.login(loginData.result.user, loginData.result.access_token);
           router.push({ path: "/dashboard" });
+          alert("Successfully registered and logged in!");
         }
       } catch (error) {
         console.error("Failed to submit the form:", error);

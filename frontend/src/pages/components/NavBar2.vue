@@ -17,7 +17,7 @@
         <ul class="navbar-nav">
           <!-- Friend Requests Dropdown -->
           <li class="nav-item">
-            <div class="dropdown-container" v-click-outside="closeDropdown">
+            <div class="dropdown-container" v-click-outside="closeDropdown" @click="fetchRequests()">
               <button @click="toggleDropdown" class="nav-link dropdown-button">
                 Friend Requests
               </button>
