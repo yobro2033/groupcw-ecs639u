@@ -87,6 +87,49 @@
               </div>
             </div>
           </li>
+
+          <!-- Friend dropdown -->
+
+          <li class="nav-item" @click="fetchFriends()">
+            <div class="dropdown-container" v-click-outside="closeFriendsDropdown">
+              <button @click="toggleFriendsDropdown" class="nav-link dropdown-button">
+                Friends
+              </button>
+              <div v-if="showFriendsDropdown" class="dropdown-box">
+                <div class="requests-list">
+                  <div
+                    v-for="friend in friends_list"
+                    :key="friend.id"
+                    class="request-card"
+                  >
+                    <img
+                      :src="friend.profile_image"
+                      alt="Profile"
+                      class="profile-image"
+                    />
+                    <div class="request-details">
+                      <p class="name">
+                        {{ friend.first_name }} {{ friend.last_name }}
+                      </p>
+                      <p class="email">{{ friend.email }}</p>
+                    </div>
+                    <div class="action-buttons">
+                      <button
+                        @click="unfriendRequest(friend.id)"
+                        class="btn btn-danger btn-sm"
+                      >
+                        Remove
+                      </button>
+                      </div>
+                  </div>
+                </div>
+                <p v-if="friends_list.length === 0" class="no-requests">
+                  No friends available.
+                </p>
+              </div>
+            </div>
+          </li>
+
           <!-- Other Links -->
           <li>
             <router-link class="nav-link" to="/dashboard">Profile Page</router-link>
@@ -205,8 +248,10 @@ export default defineComponent({
   data() {
     return {
       showDropdown: false,
+      showFriendsDropdown: false,
       activeTab: "received",
       requests: [],
+      friends_list: [],
     };
   },
   setup() {
@@ -219,6 +264,12 @@ export default defineComponent({
     },
     closeDropdown() {
       this.showDropdown = false;
+    },
+    toggleFriendsDropdown() {
+      this.showFriendsDropdown = !this.showFriendsDropdown;
+    },
+    closeFriendsDropdown() {
+      this.showFriendsDropdown = false;
     },
     setTab(tab) {
       this.activeTab = tab;
@@ -245,11 +296,36 @@ export default defineComponent({
         console.error("Error fetching requests:", error);
       }
     },
+    async fetchFriends() {
+      try {
+        console.log("Fetching friends");
+        const response = await fetch("http://127.0.0.1:8000/api/friends/", {
+          headers: {
+            Authorization: "Token " + this.userStore.token,
+          },
+        });
+        const data = await response.json();
+        if (data.success === "true") {
+          this.friends_list = data.result;
+        } else {
+          console.error("Failed to fetch friends:", data.error);
+        }
+      } catch (error) {
+        console.error("Error fetching friends:", error);
+      }
+    },
     async acceptRequest(id) {
       await this.handleRequest(
         `http://127.0.0.1:8000/api/friend_request/accept/${id}/`,
         "Accepted",
         "POST"
+      );
+    },
+    async unfriendRequest(id) {
+      await this.handleRequest(
+        `http://127.0.0.1:8000/api/friend/remove/${id}/`,
+        "Unfriended",
+        "DELETE"
       );
     },
     async rejectRequest(id) {

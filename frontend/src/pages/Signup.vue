@@ -109,7 +109,7 @@ export default defineComponent({
         password: this.password,
         password1: this.password,
         password2: this.password2,
-        hobbies: this.selectedHobbies,
+        hobbies: this.selectedHobbies.map((hobby) => ({ id: hobby.id, name: hobby.name })),
       };
 
       try {

@@ -494,9 +494,13 @@ def sign_up(request):
             data = json.loads(request.body)
             email = data.get('email')
             data.update({'username': email})
+            # convert data.hobbies to list of only id [1, 2, 3]
+            data['hobbies'] = [h['id'] for h in data['hobbies']]
+            print(data)
             form = UserCreateForm(data)
             if form.is_valid():
                 new_user = form.save()
+                new_user.hobbies.set(data['hobbies'])
                 return JsonResponse({'result': {'message': 'Successfully created an account!'}, 'success': 'true'}, status=201)
             return JsonResponse(form.errors, status=400)
         else:
