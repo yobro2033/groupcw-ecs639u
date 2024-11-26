@@ -41,4 +41,4 @@ def create_hobbies():
         response = requests.put('http://127.0.0.1:8000/api/hobbies/add/', headers=headers, json=json_data)
         print(response, response.text)
 
-create_hobbies()
+#create_hobbies()
