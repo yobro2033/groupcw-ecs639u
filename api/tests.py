@@ -1,5 +1,5 @@
 from django.test import TestCase
-import requests, time
+import requests
 
 # Create your tests here.
 
