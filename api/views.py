@@ -75,7 +75,7 @@ def process_common_hobbies(request, other_users, current_user_hobbies):
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
 def home(request):
-    return render(request,'App.vue')
+    return render(request, 'api/spa/index.html', {})
 
 @api_view(['GET'])
 def login_view(request: HttpRequest) -> HttpResponse:
