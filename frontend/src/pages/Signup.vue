@@ -40,7 +40,7 @@
 
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, onMounted } from "vue";
 import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.min.css";
 
@@ -61,9 +61,24 @@ export default defineComponent({
       confirm_password: "",
     });
     const selectedHobbies = ref<Hobby[]>([]);
-    const hobbyOptions = ref<Hobby[]>([]); // Assuming you have a list of hobby options
+    const hobbyOptions = ref<Hobby[]>([]);
     const passwordError = ref(false);
     const userExistsError = ref(false);
+
+    const fetchHobbies = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/hobbies/");
+        const data = await response.json();
+        hobbyOptions.value = data.result;
+      } catch (error) {
+        console.error("Failed to fetch hobbies:", error);
+      }
+    };
+
+    onMounted(() => {
+      console.log("Fetching hobbies...");
+      fetchHobbies();
+    });
 
     const submit = async () => {
       passwordError.value = false;
