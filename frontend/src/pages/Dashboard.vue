@@ -96,17 +96,33 @@ import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.min.css";
 import { useUserStore } from "../../stores/auth";
 
+interface Hobby {
+  id: string;
+  name: string;
+  description: string;
+}
+
+interface UserProfile {
+  profile_image: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  date_of_birth: string;
+  hobbies: Hobby[];
+}
+
 export default defineComponent({
   components: { Multiselect },
   setup() {
-    const userProfile = ref(null);
-    const hobbiesList = ref([]);
+    const userStore = useUserStore();
+    const userProfile = ref<UserProfile | null>(null);
+    const hobbiesList = ref<Hobby[]>([]);
     const editProfile = ref({
       first_name: "",
       last_name: "",
       email: "",
       date_of_birth: "",
-      selectedHobbies: [],
+      selectedHobbies: [] as Hobby[],
     });
     const newHobby = ref({ name: "", description: "" });
     const showNewHobbyForm = ref(false);
@@ -119,83 +135,94 @@ export default defineComponent({
     const showChangePassword = ref(false);
 
     const loadProfile = async () => {
-      const response = await fetch("http://localhost:8000/api/my_profile", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Token " + useUserStore().token,
-        },
-      });
-      const data = await response.json();
-      userProfile.value = data.result;
-      editProfile.value = {
-        first_name: userProfile.value.first_name,
-        last_name: userProfile.value.last_name,
-        email: userProfile.value.email,
-        date_of_birth: userProfile.value.date_of_birth,
-        selectedHobbies: userProfile.value.hobbies.map((hobby) => hobby),
-      };
-      loadHobbiesList();
+      try {
+        const response = await fetch("http://localhost:8000/api/my_profile", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Token " + userStore.token,
+          },
+        });
+        const data = await response.json();
+        userProfile.value = data.result;
+        if (userProfile.value) {
+          editProfile.value = {
+            first_name: userProfile.value.first_name,
+            last_name: userProfile.value.last_name,
+            email: userProfile.value.email,
+            date_of_birth: userProfile.value.date_of_birth,
+            selectedHobbies: userProfile.value.hobbies.map((hobby) => hobby),
+          };
+        }
+        loadHobbiesList();
+      } catch (error) {
+        console.error("Error loading profile:", error);
+      }
     };
 
     const loadHobbiesList = async () => {
-      const response = await fetch("http://localhost:8000/api/hobbies/", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
-      hobbiesList.value = data.result;
+      try {
+        const response = await fetch("http://localhost:8000/api/hobbies/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        hobbiesList.value = data.result;
+      } catch (error) {
+        console.error("Error loading hobbies list:", error);
+      }
     };
 
     const updateProfile = async () => {
-  // Filter out 'add_new' and null values from the selectedHobbies array
-  console.log('editProfile.value.selectedHobbies', editProfile.value.selectedHobbies)
-  const selectedHobbies = editProfile.value.selectedHobbies.filter(
-    (id) => id && id !== "add_new"
-  );
-  // change selectedHobbies to an array of hobby IDs
-  const selectedHobbyIds = selectedHobbies.map((hobby) => hobby.id);
+      try {
+        const selectedHobbies = editProfile.value.selectedHobbies.filter(
+          (hobby) => hobby && hobby.id !== "add_new"
+        );
+        const selectedHobbyIds = selectedHobbies.map((hobby) => hobby.id);
 
-  await fetch("http://localhost:8000/api/profile/update/", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Token " + useUserStore().token,
-    },
-    body: JSON.stringify({
-      first_name: editProfile.value.first_name,
-      last_name: editProfile.value.last_name,
-      email: editProfile.value.email,
-      date_of_birth: editProfile.value.date_of_birth,
-      hobbies: selectedHobbyIds,
-    }),
-  });
+        await fetch("http://localhost:8000/api/profile/update/", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Token " + userStore.token,
+          },
+          body: JSON.stringify({
+            first_name: editProfile.value.first_name,
+            last_name: editProfile.value.last_name,
+            email: editProfile.value.email,
+            date_of_birth: editProfile.value.date_of_birth,
+            hobbies: selectedHobbyIds,
+          }),
+        });
 
-  alert("Profile updated successfully!");
-  loadProfile();
-};
+        alert("Profile updated successfully!");
+        loadProfile();
+      } catch (error) {
+        console.error("Error updating profile:", error);
+      }
+    };
 
-    const addNewHobbyOption = (newTag) => {
+    const addNewHobbyOption = (newTag: string) => {
       newHobby.value.name = newTag;
       showNewHobbyForm.value = true;
     };
 
     const addNewHobby = async () => {
-      const response = await fetch("http://localhost:8000/api/hobbies/add/", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Token " + useUserStore().token,
-        },
-        body: JSON.stringify(newHobby.value),
-      });
-      const data = await response.json();
       try {
+        const response = await fetch("http://localhost:8000/api/hobbies/add/", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Token " + userStore.token,
+          },
+          body: JSON.stringify(newHobby.value),
+        });
+        const data = await response.json();
         hobbiesList.value.push(data.result);
         editProfile.value.selectedHobbies.push(data.result);
-        newHobby.value = { name: "", id: "" };
+        newHobby.value = { name: "", description: "" };
         showNewHobbyForm.value = false;
       } catch (error) {
         console.error("Failed to add new hobby:", error);
@@ -203,22 +230,24 @@ export default defineComponent({
     };
 
     const changePassword = async () => {
-      await fetch("http://localhost:8000/api/profile/change_password/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Token " + useUserStore().token,
-        },
-        body: JSON.stringify(passwordForm.value),
-      }).then((response) => {
+      try {
+        const response = await fetch("http://localhost:8000/api/profile/change_password/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Token " + userStore.token,
+          },
+          body: JSON.stringify(passwordForm.value),
+        });
         if (response.status === 200) {
           alert("Password changed successfully!");
           showChangePassword.value = false;
         } else {
           alert("Failed to change password. Please try again.");
         }
-      });
-      showChangePassword.value = false;
+      } catch (error) {
+        console.error("Error changing password:", error);
+      }
     };
 
     onMounted(() => {

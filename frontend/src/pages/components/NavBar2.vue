@@ -239,10 +239,11 @@
 }
 </style>
 
-<script>
+<script lang="ts">
 import { defineComponent } from "vue";
 import router from "../../router";
 import { useUserStore } from "../../../stores/auth";
+import { Request, Friend } from "../../types"; // Adjust the path as necessary
 
 export default defineComponent({
   data() {
@@ -250,8 +251,8 @@ export default defineComponent({
       showDropdown: false,
       showFriendsDropdown: false,
       activeTab: "received",
-      requests: [],
-      friends_list: [],
+      requests: [] as Request[],
+      friends_list: [] as Friend[],
     };
   },
   setup() {
@@ -271,8 +272,8 @@ export default defineComponent({
     closeFriendsDropdown() {
       this.showFriendsDropdown = false;
     },
-    setTab(tab) {
-      this.activeTab = tab;
+    setTab(activeTab: string) {
+      this.activeTab = activeTab;
       this.fetchRequests();
     },
     async fetchRequests() {
@@ -314,35 +315,35 @@ export default defineComponent({
         console.error("Error fetching friends:", error);
       }
     },
-    async acceptRequest(id) {
+    async acceptRequest(id: string) {
       await this.handleRequest(
         `http://127.0.0.1:8000/api/friend_request/accept/${id}/`,
         "Accepted",
         "POST"
       );
     },
-    async unfriendRequest(id) {
+    async unfriendRequest(id: string) {
       await this.handleRequest(
         `http://127.0.0.1:8000/api/friend/remove/${id}/`,
         "Unfriended",
         "DELETE"
       );
     },
-    async rejectRequest(id) {
+    async rejectRequest(id: string) {
       await this.handleRequest(
         `http://127.0.0.1:8000/api/friend_request/reject/${id}/`,
         "Rejected",
         "PUT"
       );
     },
-    async cancelRequest(id) {
+    async cancelRequest(id: string) {
       await this.handleRequest(
         `http://127.0.0.1:8000/api/sent_request/remove/${id}/`,
         "Canceled",
         "DELETE"
       );
     },
-    async handleRequest(url, action, method) {
+    async handleRequest(url: string, action: string, method: string) {
       try {
         const response = await fetch(url, {
           method,

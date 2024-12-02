@@ -121,92 +121,123 @@
   import { defineComponent, ref, watch } from "vue";
   import { useUserStore } from "../../stores/auth";
   
+  interface User {
+    id: string;
+    profile_image: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    common_hobby_count: number;
+    isFriend: boolean;
+    hasSentRequest: boolean;
+    hasPendingRequest: boolean;
+  }
+  
   export default defineComponent({
     setup() {
-      const searchTerm = ref("");
-      const l_age = ref(18);
-      const u_age = ref(60);
-      const users = ref([]);
+      const userStore = useUserStore();
+      const searchTerm = ref<string>("");
+      const l_age = ref<number>(18);
+      const u_age = ref<number>(60);
+      const users = ref<User[]>([]);
       const minAge = 18;
       const maxAge = 100;
   
       const searchUsers = async () => {
-        // check whether searchTerm is empty
         if (searchTerm.value !== "") {
-          const response = await fetch(
-          `http://localhost:8000/api/users/?search=${searchTerm.value}&l_age=${l_age.value}&u_age=${u_age.value}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Token " + useUserStore().token,
-            },
+          try {
+            const response = await fetch(
+              `http://localhost:8000/api/users/?search=${searchTerm.value}&l_age=${l_age.value}&u_age=${u_age.value}`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: "Token " + userStore.token,
+                },
+              }
+            );
+            const data = await response.json();
+            users.value = data.result.users || [];
+          } catch (error) {
+            console.error("Error searching users:", error);
           }
-        );
-        const data = await response.json();
-        users.value = data.result.users || [];
-        };
+        }
       };
   
-      const sendFriendRequest = async (userId: number) => {
-        await fetch(
-          `http://localhost:8000/api/friend_request/send/${userId}/`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Token " + useUserStore().token,
-            },
-          }
-        );
-        alert("Friend request sent!");
-        searchUsers(); // Refresh the user list
+      const sendFriendRequest = async (userId: string) => {
+        try {
+          await fetch(
+            `http://localhost:8000/api/friend_request/send/${userId}/`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Token " + userStore.token,
+              },
+            }
+          );
+          alert("Friend request sent!");
+          searchUsers(); // Refresh the user list
+        } catch (error) {
+          console.error("Error sending friend request:", error);
+        }
       };
   
-      const cancelFriendRequest = async (userId: number) => {
-        // `http://127.0.0.1:8000/api/sent_request/remove/${id}/`
-        await fetch(
-          `http://localhost:8000/api/sent_request/remove/${userId}/`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Token " + useUserStore().token,
-            },
-          }
-        );
-        alert("Friend request canceled!");
-        searchUsers(); // Refresh the user list
+      const cancelFriendRequest = async (userId: string) => {
+        try {
+          await fetch(
+            `http://localhost:8000/api/sent_request/remove/${userId}/`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Token " + userStore.token,
+              },
+            }
+          );
+          alert("Friend request canceled!");
+          searchUsers(); // Refresh the user list
+        } catch (error) {
+          console.error("Error canceling friend request:", error);
+        }
       };
   
-      const acceptFriendRequest = async (userId: number) => {
-        await fetch(
-          `http://localhost:8000/api/friend_request/accept/${userId}/`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Token " + useUserStore().token,
-            },
-          }
-        );
-        alert("Friend request accepted!");
-        searchUsers(); // Refresh the user list
+      const acceptFriendRequest = async (userId: string) => {
+        try {
+          await fetch(
+            `http://localhost:8000/api/friend_request/accept/${userId}/`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Token " + userStore.token,
+              },
+            }
+          );
+          alert("Friend request accepted!");
+          searchUsers(); // Refresh the user list
+        } catch (error) {
+          console.error("Error accepting friend request:", error);
+        }
       };
   
-      const removeFriend = async (userId: number) => {
-        await fetch(
-          `http://localhost:8000/api/friend/remove/${userId}/`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Token " + useUserStore().token,
-            },
-          }
-        );
-        alert("Friend removed!");
-        searchUsers(); // Refresh the user list
+      const removeFriend = async (userId: string) => {
+        try {
+          await fetch(
+            `http://localhost:8000/api/friend/remove/${userId}/`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Token " + userStore.token,
+              },
+            }
+          );
+          alert("Friend removed!");
+          searchUsers(); // Refresh the user list
+        } catch (error) {
+          console.error("Error removing friend:", error);
+        }
       };
   
       // Watch for changes in searchTerm, l_age, or u_age and trigger search
@@ -219,6 +250,7 @@
         users,
         minAge,
         maxAge,
+        searchUsers,
         sendFriendRequest,
         cancelFriendRequest,
         acceptFriendRequest,
@@ -227,5 +259,5 @@
     },
   });
   </script>
-  
+
   
