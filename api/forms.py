@@ -1,7 +1,7 @@
+from typing import Any
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import User, Hobbies
-
 
 class UserCreateForm(UserCreationForm):
     class Meta:
@@ -25,8 +25,8 @@ class UserCreateForm(UserCreationForm):
             'hobbies': forms.CheckboxSelectMultiple(),
         }
 
-    def save(self, commit=True):
-        user = super().save(commit=False)
+    def save(self, commit: bool = True) -> User:
+        user: User = super().save(commit=False)
         if commit:
             user.save()
         return user
@@ -58,8 +58,8 @@ class UserEditForm(forms.ModelForm):
             'hobbies': forms.CheckboxSelectMultiple(),
         }
 
-    def save(self, commit=True):
-        user = super().save(commit=False)
+    def save(self, commit: bool = True) -> User:
+        user: User = super().save(commit=False)
         if commit:
             user.save()
         return user
@@ -81,9 +81,8 @@ class HobbiesForm(forms.ModelForm):
             'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter hobby description'}),
         }
 
-    def save(self, commit=True):
-        hobby = super().save(commit=False)
+    def save(self, commit: bool = True) -> Hobbies:
+        hobby: Hobbies = super().save(commit=False)
         if commit:
             hobby.save()
         return hobby
-

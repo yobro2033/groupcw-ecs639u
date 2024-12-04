@@ -1,12 +1,12 @@
 import json
 import sys
+from typing import List, Dict, Any, Union
 from django.http import HttpResponse, HttpRequest, JsonResponse
-from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, BasePermission
 from .models import User, Hobbies
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
 from django.utils.timezone import datetime
 from .forms import UserCreateForm, UserEditForm, PasswordEditForm, HobbiesForm
@@ -26,21 +26,15 @@ class Hobby:
             'description': self.description
         }
 
-def process_common_hobbies(request, other_users, current_user_hobbies):
+def process_common_hobbies(request: HttpRequest, other_users: List[User], current_user_hobbies: set) -> JsonResponse:
     try:
         user_matches = []
         for user in other_users:
             user_hobbies = set(user.hobbies.values_list('id', flat=True))
             common_hobbies = current_user_hobbies.intersection(user_hobbies)
-            isFriend = False
-            hasPendingRequest = False
-            hasSentRequest = False
-            if user in request.user.friends.all():
-                isFriend = True
-            if user in request.user.pending_requests.all():
-                hasPendingRequest = True
-            if user in request.user.sent_requests.all():
-                hasSentRequest = True
+            isFriend = user in request.user.friends.all()
+            hasPendingRequest = user in request.user.pending_requests.all()
+            hasSentRequest = user in request.user.sent_requests.all()
             user_matches.append({
                 'id': user.id,
                 'first_name': user.first_name,
@@ -74,7 +68,7 @@ def process_common_hobbies(request, other_users, current_user_hobbies):
         print('[ERROR] @ process_common_hobbies: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
-def home(request):
+def home(request: HttpRequest) -> HttpResponse:
     return render(request, 'api/spa/index.html', {})
 
 @api_view(['GET'])
@@ -95,27 +89,23 @@ def get_hobbies(request: HttpRequest) -> JsonResponse:
     try:
         if request.method == 'GET':
             hobbies = Hobbies.objects.all()
-            #hobbies_list = [Hobby(h.name, h.description).to_dict() for h in hobbies]
-            # hobbies_list return inside result contain id and name only
             hobbies_list = list(hobbies.values('id', 'name'))
             return JsonResponse({'result': hobbies_list, 'success': 'true'}, status=200)
         else:
-            return Response({'error': 'Method not allowed', 'success': 'false'}, status=405)
+            return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
     except Exception as e:
         print('[ERROR] @ get_hobbies: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def match_users_by_hobbies(request):
+def match_users_by_hobbies(request: HttpRequest) -> JsonResponse:
     try:
         if request.method == 'GET':
             current_user = request.user
             current_user_hobbies = set(current_user.hobbies.values_list('id', flat=True))
-
             other_users = User.objects.exclude(id=current_user.id).prefetch_related('hobbies')
-
-            process_common_hobbies(request, other_users, current_user_hobbies)
+            return process_common_hobbies(request, other_users, current_user_hobbies)
         else:
             return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
     except Exception as e:
@@ -376,23 +366,6 @@ def update_profile(request: HttpRequest) -> JsonResponse:
         print('[ERROR] @ update_profile: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
-#@api_view(["PUT"])
-#@permission_classes([IsAuthenticated])
-#def update_profile_image(request: HttpRequest) -> JsonResponse:
-#    if request.method != 'PUT':
-#        return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
-#    else:
-#        current_user = request.user
-#        image = request.data.get('image')
-#
-#        if not image:
-#            return JsonResponse({'error': 'Image data not provided', 'success': 'false'}, status=400)
-#
-#        current_user.profile_image = image
-#        current_user.save()
-#
-#        return JsonResponse({'result': 'Profile image updated', 'success': 'true'})
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request: HttpRequest) -> JsonResponse:
@@ -401,8 +374,7 @@ def change_password(request: HttpRequest) -> JsonResponse:
             return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
         else:
             current_user = request.user
-            rq_json = json.dumps(request.data)
-            data = json.loads(rq_json)
+            data = request.data
             if data.get('new_password') != data.get('new_password_confirm'):
                 return JsonResponse({'error': 'Passwords do not match', 'success': 'false'}, status=400)
             if not current_user.check_password(data.get('old_password')):
@@ -422,12 +394,10 @@ def create_new_hobby(request: HttpRequest) -> JsonResponse:
             return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
         else:
             try:
-                json_data = json.dumps(request.data)
-                data = json.loads(json_data)
+                data = request.data
                 form = HobbiesForm(data)
                 if form.is_valid():
                     form.save()
-                    # Get the id and name of the newly created hobby
                     hobby = Hobbies.objects.get(name=data['name'])
                     return JsonResponse({'result': {'id': hobby.id, 'name': hobby.name}, 'success': 'true'}, status=201)
                 return JsonResponse(form.errors, status=400)
@@ -436,6 +406,7 @@ def create_new_hobby(request: HttpRequest) -> JsonResponse:
     except Exception as e:
         print('[ERROR] @ create_new_hobby: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -469,7 +440,7 @@ def search_users(request: HttpRequest) -> JsonResponse:
 
 @api_view(['POST'])
 @permission_classes([BasePermission])
-def login(request):
+def login(request : HttpRequest) -> JsonResponse:
     try:
         if request.method == 'POST':
             data = json.loads(request.body)
@@ -488,7 +459,7 @@ def login(request):
 
 @api_view(['POST'])
 @permission_classes([BasePermission])
-def sign_up(request):
+def sign_up(request : HttpRequest) -> JsonResponse:
     try:
         if request.method == 'POST':
             data = json.loads(request.body)
@@ -511,7 +482,7 @@ def sign_up(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def logout(request):
+def logout(request : HttpRequest) -> JsonResponse:
     try:
         if request.method == 'POST':
             headers = request.headers

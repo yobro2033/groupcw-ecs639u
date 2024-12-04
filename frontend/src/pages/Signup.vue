@@ -43,6 +43,8 @@
 import { defineComponent, ref, onMounted } from "vue";
 import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.min.css";
+import { useUserStore } from '../../stores/auth';
+import router from '../router/index'
 
 interface Hobby {
   id: string;
@@ -110,6 +112,23 @@ export default defineComponent({
         });
         const data = await response.json();
         if (data.success) {
+          // login after signup
+          const requestOptions = {
+            method: "POST",
+            headers: {
+              "Content-type": "application/json",
+            },
+            body: JSON.stringify({ "username": requestBody.email, "password": requestBody.password})
+          }
+
+          const signup = await fetch('http://127.0.0.1:8000/api/login/', requestOptions)
+          if (!signup.ok){
+              alert("Signup successful, but login failed. Please try logging in.")
+          }
+          const data = await signup.json() 
+          const userStore = useUserStore();
+          userStore.login(data.result.user, data.result.access_token)
+          router.push('/dashboard')
           alert("Signup successful");
         } else {
           if (data.error === "User already exists") {
