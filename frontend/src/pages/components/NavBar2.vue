@@ -295,6 +295,7 @@ export default defineComponent({
         "Unfriended",
         "DELETE"
       );
+      this.fetchFriends();
     },
     async rejectRequest(id: string) {
       await this.handleRequest(
@@ -324,6 +325,7 @@ export default defineComponent({
           const data = await response;
           if (data.status === 204) {
             this.fetchRequests();
+            this.fetchFriends();
             this.successMessage = `${action} request successfully.`;
             setTimeout(() => {
               this.successMessage = null;
