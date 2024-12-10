@@ -20,6 +20,7 @@ class Hobbies(models.Model):
 
 class User(AbstractUser):
     id: int = models.AutoField(primary_key=True)
+    username: str = models.CharField(max_length=150, unique=True)
     profile_image: Any = models.ImageField(upload_to='profile_images/', default='profile_images/default.jpg', blank=True)
     first_name: str = models.CharField(max_length=30)
     last_name: str = models.CharField(max_length=30)
