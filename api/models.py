@@ -10,8 +10,8 @@ class PageView(models.Model):
 
 class Hobbies(models.Model):
     id: int = models.AutoField(primary_key=True)
-    name: str = models.CharField(max_length=30)
-    description: str = models.CharField(max_length=100)
+    name: str = models.CharField(max_length=254)
+    description: str = models.CharField(max_length=254)
 
     REQUIRED_FIELDS: List[str] = ['name', 'description']
 
@@ -20,13 +20,12 @@ class Hobbies(models.Model):
 
 class User(AbstractUser):
     id: int = models.AutoField(primary_key=True)
-    username: str = models.CharField(max_length=150, unique=True)
     profile_image: Any = models.ImageField(upload_to='profile_images/', default='profile_images/default.jpg', blank=True)
-    first_name: str = models.CharField(max_length=30)
-    last_name: str = models.CharField(max_length=30)
+    first_name: str = models.CharField(max_length=254)
+    last_name: str = models.CharField(max_length=254)
     email: str = models.EmailField(max_length=254)
     date_of_birth: Any = models.DateField()
-    password: str = models.CharField(max_length=30)
+    password: str = models.CharField(max_length=254)
     hobbies: Any = models.ManyToManyField(Hobbies, default=None, blank=True)
     friends: Any = models.ManyToManyField('self', default=None, blank=True)
     pending_requests: Any = models.ManyToManyField('self', default=None, blank=True, symmetrical=False, related_name='incoming_requests')
