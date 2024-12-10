@@ -190,3 +190,9 @@ REST_FRAMEWORK = {
 }
 
 AUTH_USER_MODEL = 'api.User'
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:8000",
+    "https://django-psql-persistent-web-apps.apps.a.comp-teach.qmul.ac.uk",
+]
