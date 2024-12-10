@@ -482,7 +482,7 @@ def sign_up(request : HttpRequest) -> JsonResponse:
             # convert data.hobbies to list of only id [1, 2, 3]
             data['hobbies'] = [h['id'] for h in data['hobbies']]
             # check age is greater than 12
-            if (datetime.now().year - data['date_of_birth'].year) < 12:
+            if (datetime.now().year - data['date_of_birth'].split("-")[0]) < 12:
                 return JsonResponse({'error': 'You must be at least 12 years old to sign up', 'success': 'false'}, status=400)
             form = UserCreateForm(data)
             if form.is_valid():
