@@ -30,9 +30,15 @@
     import router from '../router/index'
     import { useUserStore } from '../../stores/auth';
     
-    function getCsrfToken(): string | null {
-      const meta = document.querySelector('meta[name="csrf-token"]');
-      return meta ? meta.getAttribute('content') : null;
+    function getCookieCsrfToken(): string | null {
+      const cookies = document.cookie.split(';');
+      for (const cookie of cookies) {
+        const [name, value] = cookie.split('=');
+        if (name.trim() === "csrftoken") {
+          return value;
+        }
+      }
+      return null;
     }
     
     export default defineComponent({
@@ -52,7 +58,7 @@
             this.loginError = false;
             this.loginErrorMessage = '';
 
-            const csrfToken = getCsrfToken();
+            const csrfToken = getCookieCsrfToken();
             const requestOptions = {
               method: "POST",
               headers: {

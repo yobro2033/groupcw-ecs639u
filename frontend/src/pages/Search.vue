@@ -121,9 +121,15 @@
   import { defineComponent, ref, watch } from "vue";
   import { useUserStore } from "../../stores/auth";
 
-  function getCsrfToken(): string | null {
-    const meta = document.querySelector('meta[name="csrf-token"]');
-    return meta ? meta.getAttribute('content') : null;
+  function getCookieCsrfToken(): string | null {
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.split('=');
+      if (name.trim() === "csrftoken") {
+        return value;
+      }
+    }
+    return null;
   }
 
   interface User {
@@ -171,7 +177,7 @@
   
       const sendFriendRequest = async (userId: string) => {
         try {
-          const csrfToken = getCsrfToken();
+          const csrfToken = getCookieCsrfToken();
           await fetch(
             `/api/friend_request/send/${userId}/`,
             {
@@ -211,7 +217,7 @@
   
       const acceptFriendRequest = async (userId: string) => {
         try {
-          const csrfToken = getCsrfToken();
+          const csrfToken = getCookieCsrfToken();
           await fetch(
             `/api/friend_request/accept/${userId}/`,
             {

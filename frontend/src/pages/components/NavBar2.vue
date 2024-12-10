@@ -245,9 +245,15 @@ import router from "../../router";
 import { useUserStore } from "../../../stores/auth";
 import { Request, Friend } from "../../types";
 
-function getCsrfToken(): string | null {
-  const meta = document.querySelector('meta[name="csrf-token"]');
-  return meta ? meta.getAttribute('content') : null;
+function getCookieCsrfToken(): string | null {
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.split('=');
+    if (name.trim() === "csrftoken") {
+      return value;
+    }
+  }
+  return null;
 }
 
 export default defineComponent({
@@ -352,7 +358,7 @@ export default defineComponent({
       try {
         var requestOptions = {};
         if (method === "POST") {
-          const csrfToken = getCsrfToken();
+          const csrfToken = getCookieCsrfToken();
           requestOptions = {
             method: "POST",
             headers: {
@@ -382,7 +388,7 @@ export default defineComponent({
       }
     },
     async logout() {
-      const csrfToken = getCsrfToken();
+      const csrfToken = getCookieCsrfToken();
       const requestOptions = {
         method: "POST",
         headers: {

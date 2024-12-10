@@ -51,9 +51,15 @@ interface Hobby {
   name: string;
 }
 
-function getCsrfToken(): string | null {
-  const meta = document.querySelector('meta[name="csrf-token"]');
-  return meta ? meta.getAttribute('content') : null;
+function getCookieCsrfToken(): string | null {
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.split('=');
+    if (name.trim() === "csrftoken") {
+      return value;
+    }
+  }
+  return null;
 }
 
 export default defineComponent({
@@ -108,7 +114,7 @@ export default defineComponent({
       };
 
       try {
-        const csrfToken = getCsrfToken();
+        const csrfToken = getCookieCsrfToken();
         const response = await fetch(`/api/register/`, {
           method: "POST",
           headers: {
