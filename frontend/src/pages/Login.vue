@@ -30,6 +30,10 @@
     import router from '../router/index'
     import { useUserStore } from '../../stores/auth';
     
+    function getCsrfToken(): string | null {
+      const meta = document.querySelector('meta[name="csrf-token"]');
+      return meta ? meta.getAttribute('content') : null;
+    }
     
     export default defineComponent({
         data() {
@@ -48,16 +52,17 @@
             this.loginError = false;
             this.loginErrorMessage = '';
 
-
+            const csrfToken = getCsrfToken();
             const requestOptions = {
               method: "POST",
               headers: {
                 "Content-type": "application/json",
+                "X-CSRFToken": csrfToken || "",
               },
               body: JSON.stringify({ "username": this.username, "password": this.password})
             }
 
-            const signup = await fetch('http://127.0.0.1:8000/api/login/', requestOptions)
+            const signup = await fetch(`/api/login/`, requestOptions)
             if (!signup.ok){
                 this.loginError = true;
                 this.loginErrorMessage  = 'Login failed. Please try again.'

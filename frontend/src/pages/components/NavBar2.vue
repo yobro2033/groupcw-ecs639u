@@ -243,7 +243,12 @@
 import { defineComponent } from "vue";
 import router from "../../router";
 import { useUserStore } from "../../../stores/auth";
-import { Request, Friend } from "../../types"; // Adjust the path as necessary
+import { Request, Friend } from "../../types";
+
+function getCsrfToken(): string | null {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  return meta ? meta.getAttribute('content') : null;
+}
 
 export default defineComponent({
   data() {
@@ -279,8 +284,8 @@ export default defineComponent({
     async fetchRequests() {
       const endpoint =
         this.activeTab === "received"
-          ? "http://127.0.0.1:8000/api/friend_requests/"
-          : "http://127.0.0.1:8000/api/sent_requests/";
+          ? `/api/friend_requests/`
+          : `/api/sent_requests/`;
       try {
         const response = await fetch(endpoint, {
           headers: {
@@ -300,7 +305,7 @@ export default defineComponent({
     async fetchFriends() {
       try {
         console.log("Fetching friends");
-        const response = await fetch("http://127.0.0.1:8000/api/friends/", {
+        const response = await fetch(`/api/friends/`, {
           headers: {
             Authorization: "Token " + this.userStore.token,
           },
@@ -317,40 +322,54 @@ export default defineComponent({
     },
     async acceptRequest(id: string) {
       await this.handleRequest(
-        `http://127.0.0.1:8000/api/friend_request/accept/${id}/`,
+        `/api/friend_request/accept/${id}/`,
         "Accepted",
         "POST"
       );
     },
     async unfriendRequest(id: string) {
       await this.handleRequest(
-        `http://127.0.0.1:8000/api/friend/remove/${id}/`,
+        `/api/friend/remove/${id}/`,
         "Unfriended",
         "DELETE"
       );
     },
     async rejectRequest(id: string) {
       await this.handleRequest(
-        `http://127.0.0.1:8000/api/friend_request/reject/${id}/`,
+        `/api/friend_request/reject/${id}/`,
         "Rejected",
         "PUT"
       );
     },
     async cancelRequest(id: string) {
       await this.handleRequest(
-        `http://127.0.0.1:8000/api/sent_request/remove/${id}/`,
+        `/api/sent_request/remove/${id}/`,
         "Canceled",
         "DELETE"
       );
     },
     async handleRequest(url: string, action: string, method: string) {
       try {
-        const response = await fetch(url, {
-          method,
-          headers: {
-            Authorization: "Token " + this.userStore.token,
-          },
-        });
+        var requestOptions = {};
+        if (method === "POST") {
+          const csrfToken = getCsrfToken();
+          requestOptions = {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Token " + this.userStore.token,
+              "X-CSRFToken": csrfToken || "",
+            },
+          };
+        } else {
+          requestOptions = {
+            method: method,
+            headers: {
+              Authorization: "Token " + this.userStore.token,
+            },
+          };
+        }
+        const response = await fetch(url, requestOptions);
         const data = await response.json();
         if (data.success === "true") {
           this.fetchRequests();
@@ -363,15 +382,17 @@ export default defineComponent({
       }
     },
     async logout() {
+      const csrfToken = getCsrfToken();
       const requestOptions = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: "Token " + this.userStore.token,
+          "X-CSRFToken": csrfToken || "",
         },
       };
       const loggedOut = await fetch(
-        "http://127.0.0.1:8000/api/logout/",
+        `/api/logout/`,
         requestOptions
       );
       const data = await loggedOut.json();

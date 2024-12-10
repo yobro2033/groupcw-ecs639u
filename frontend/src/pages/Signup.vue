@@ -51,6 +51,11 @@ interface Hobby {
   name: string;
 }
 
+function getCsrfToken(): string | null {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  return meta ? meta.getAttribute('content') : null;
+}
+
 export default defineComponent({
   components: { Multiselect },
   setup() {
@@ -69,7 +74,7 @@ export default defineComponent({
 
     const fetchHobbies = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/hobbies/");
+        const response = await fetch(`/api/hobbies/`);
         const data = await response.json();
         hobbyOptions.value = data.result;
       } catch (error) {
@@ -103,10 +108,12 @@ export default defineComponent({
       };
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/register/", {
+        const csrfToken = getCsrfToken();
+        const response = await fetch(`/api/register/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken || "",
           },
           body: JSON.stringify(requestBody),
         });
@@ -117,11 +124,12 @@ export default defineComponent({
             method: "POST",
             headers: {
               "Content-type": "application/json",
+              "X-CSRFToken": csrfToken || "",
             },
             body: JSON.stringify({ "username": requestBody.email, "password": requestBody.password})
           }
 
-          const signup = await fetch('http://127.0.0.1:8000/api/login/', requestOptions)
+          const signup = await fetch(`/api/login/`, requestOptions)
           if (!signup.ok){
               alert("Signup successful, but login failed. Please try logging in.")
           }

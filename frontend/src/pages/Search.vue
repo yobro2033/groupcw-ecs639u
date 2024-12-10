@@ -120,7 +120,12 @@
   <script lang="ts">
   import { defineComponent, ref, watch } from "vue";
   import { useUserStore } from "../../stores/auth";
-  
+
+  function getCsrfToken(): string | null {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : null;
+  }
+
   interface User {
     id: string;
     profile_image: string;
@@ -147,7 +152,7 @@
         if (searchTerm.value !== "") {
           try {
             const response = await fetch(
-              `http://localhost:8000/api/users/?search=${searchTerm.value}&l_age=${l_age.value}&u_age=${u_age.value}`,
+              `/api/users/?search=${searchTerm.value}&l_age=${l_age.value}&u_age=${u_age.value}`,
               {
                 method: "GET",
                 headers: {
@@ -166,13 +171,15 @@
   
       const sendFriendRequest = async (userId: string) => {
         try {
+          const csrfToken = getCsrfToken();
           await fetch(
-            `http://localhost:8000/api/friend_request/send/${userId}/`,
+            `/api/friend_request/send/${userId}/`,
             {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: "Token " + userStore.token,
+                "X-CSRFToken": csrfToken || "",
               },
             }
           );
@@ -186,7 +193,7 @@
       const cancelFriendRequest = async (userId: string) => {
         try {
           await fetch(
-            `http://localhost:8000/api/sent_request/remove/${userId}/`,
+            `/api/sent_request/remove/${userId}/`,
             {
               method: "DELETE",
               headers: {
@@ -204,13 +211,15 @@
   
       const acceptFriendRequest = async (userId: string) => {
         try {
+          const csrfToken = getCsrfToken();
           await fetch(
-            `http://localhost:8000/api/friend_request/accept/${userId}/`,
+            `/api/friend_request/accept/${userId}/`,
             {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: "Token " + userStore.token,
+                "X-CSRFToken": csrfToken || "",
               },
             }
           );
@@ -224,7 +233,7 @@
       const removeFriend = async (userId: string) => {
         try {
           await fetch(
-            `http://localhost:8000/api/friend/remove/${userId}/`,
+            `/api/friend/remove/${userId}/`,
             {
               method: "DELETE",
               headers: {

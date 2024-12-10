@@ -111,6 +111,11 @@ interface UserProfile {
   hobbies: Hobby[];
 }
 
+function getCsrfToken(): string | null {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  return meta ? meta.getAttribute('content') : null;
+}
+
 export default defineComponent({
   components: { Multiselect },
   setup() {
@@ -136,7 +141,7 @@ export default defineComponent({
 
     const loadProfile = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/my_profile", {
+        const response = await fetch(`/api/my_profile`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -162,7 +167,7 @@ export default defineComponent({
 
     const loadHobbiesList = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/hobbies/", {
+        const response = await fetch(`/api/hobbies/`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -182,7 +187,7 @@ export default defineComponent({
         );
         const selectedHobbyIds = selectedHobbies.map((hobby) => hobby.id);
 
-        await fetch("http://localhost:8000/api/profile/update/", {
+        await fetch(`/api/profile/update/`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -211,7 +216,7 @@ export default defineComponent({
 
     const addNewHobby = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/hobbies/add/", {
+        const response = await fetch(`/api/hobbies/add/`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -231,11 +236,13 @@ export default defineComponent({
 
     const changePassword = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/profile/change_password/", {
+        const csrfToken = getCsrfToken();
+        const response = await fetch(`/api/profile/change_password/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: "Token " + userStore.token,
+            "X-CSRFToken": csrfToken || "",
           },
           body: JSON.stringify(passwordForm.value),
         });

@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.utils.timezone import datetime
 from .forms import UserCreateForm, UserEditForm, PasswordEditForm, HobbiesForm
 from rest_framework.authtoken.models import Token
+from django.views.decorators.csrf import csrf_protect
 
 def main_spa(request: HttpRequest) -> HttpResponse:
     return render(request, 'api/spa/index.html', {})
@@ -148,6 +149,7 @@ def get_my_profile(request: HttpRequest) -> JsonResponse:
         return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
 
 @api_view(['POST'])
+@csrf_protect
 @permission_classes([IsAuthenticated])
 def send_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
     if request.method != 'POST':
@@ -171,6 +173,7 @@ def send_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
         return JsonResponse({'result': 'Friend request sent', 'success': 'true'}, status=200)
 
 @api_view(['POST'])
+@csrf_protect
 @permission_classes([IsAuthenticated])
 def accept_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
     if request.method != 'POST':
@@ -189,6 +192,7 @@ def accept_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
         return JsonResponse({'result': 'Friend request accepted', 'success': 'true'}, status=200)
 
 @api_view(['POST'])
+@csrf_protect
 @permission_classes([IsAuthenticated])
 def reject_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
     try:
@@ -367,6 +371,7 @@ def update_profile(request: HttpRequest) -> JsonResponse:
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
 @api_view(['POST'])
+@csrf_protect
 @permission_classes([IsAuthenticated])
 def change_password(request: HttpRequest) -> JsonResponse:
     try:
@@ -439,11 +444,12 @@ def search_users(request: HttpRequest) -> JsonResponse:
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
 @api_view(['POST'])
+@csrf_protect
 @permission_classes([BasePermission])
 def login(request : HttpRequest) -> JsonResponse:
     try:
         if request.method == 'POST':
-            data = json.loads(request.body)
+            data = request.data
             username = data.get('username')
             password = data.get('password')
             user = User.objects.get(username=username)
@@ -458,11 +464,12 @@ def login(request : HttpRequest) -> JsonResponse:
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
 @api_view(['POST'])
+@csrf_protect
 @permission_classes([BasePermission])
 def sign_up(request : HttpRequest) -> JsonResponse:
     try:
         if request.method == 'POST':
-            data = json.loads(request.body)
+            data = request.data
             email = data.get('email')
             data.update({'username': email})
             # convert data.hobbies to list of only id [1, 2, 3]
@@ -481,6 +488,7 @@ def sign_up(request : HttpRequest) -> JsonResponse:
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
 @api_view(['POST'])
+@csrf_protect
 @permission_classes([IsAuthenticated])
 def logout(request : HttpRequest) -> JsonResponse:
     try:
