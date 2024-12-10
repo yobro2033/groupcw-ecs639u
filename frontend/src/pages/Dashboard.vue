@@ -100,7 +100,6 @@
       style="display: block"
     >
       <div class="modal-dialog" role="document">
-        <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Update Password</h5>
           </div>
@@ -150,7 +149,6 @@
             </button>
           </div>
         </div>
-      </div>
     </div>
 
     <br>
