@@ -6,22 +6,42 @@
     <div class="profile-section mb-4">
       <h3>Your Profile</h3>
       <div v-if="userProfile">
-        <img :src="userProfile.profile_image" alt="Profile Picture" class="profile-image mb-3" />
+        <img
+          :src="userProfile.profile_image"
+          alt="Profile Picture"
+          class="profile-image mb-3"
+        />
         <div>
           <label>First Name:</label>
-          <input type="text" v-model="editProfile.first_name" class="form-control mb-2" />
+          <input
+            type="text"
+            v-model="editProfile.first_name"
+            class="form-control mb-2"
+          />
         </div>
         <div>
           <label>Last Name:</label>
-          <input type="text" v-model="editProfile.last_name" class="form-control mb-2" />
+          <input
+            type="text"
+            v-model="editProfile.last_name"
+            class="form-control mb-2"
+          />
         </div>
         <div>
           <label>Email:</label>
-          <input type="email" v-model="editProfile.email" class="form-control mb-2" />
+          <input
+            type="email"
+            v-model="editProfile.email"
+            class="form-control mb-2"
+          />
         </div>
         <div>
           <label>Date of Birth:</label>
-          <input type="date" v-model="editProfile.date_of_birth" class="form-control mb-2" />
+          <input
+            type="date"
+            v-model="editProfile.date_of_birth"
+            class="form-control mb-2"
+          />
         </div>
         <div>
           <label>Hobbies:</label>
@@ -44,48 +64,102 @@
               placeholder="Enter hobby name"
               class="form-control mb-2"
             />
-            <label>Description:</label>
-            <textarea
+            <label>New Hobby Description:</label>
+            <input
+              type="text"
               v-model="newHobby.description"
               placeholder="Enter hobby description"
               class="form-control mb-2"
-            ></textarea>
-            <button class="btn btn-primary" @click="addNewHobby">Add Hobby</button>
+            />
+            <button @click="addNewHobby" class="btn btn-primary">
+              Add Hobby
+            </button>
           </div>
         </div>
-        <button class="btn btn-primary" @click="updateProfile">Save Profile</button>
+        <br />
+        <button @click="updateProfile" class="btn btn-primary">
+          Save Profile
+        </button>
       </div>
     </div>
 
     <!-- Change Password Section -->
     <div class="change-password-section">
       <h3>Change Password</h3>
-      <button class="btn btn-warning" @click="showChangePassword = true">Change Password</button>
+      <button class="btn btn-danger" @click="showPasswordModal = true">
+        Change Password
+      </button>
     </div>
 
     <!-- Change Password Modal -->
-    <div v-if="showChangePassword" class="modal-overlay">
-      <div class="modal-content">
-        <h3>Change Password</h3>
-        <div>
-          <label>Old Password:</label>
-          <input type="password" v-model="passwordForm.old_password" class="form-control mb-2" />
+    <div
+      v-if="showPasswordModal"
+      class="modal"
+      tabindex="-1"
+      role="dialog"
+      style="display: block"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Update Password</h5>
+          </div>
+          <div class="modal-body">
+            <div>
+              <label>Old Password:</label>
+              <input
+                type="password"
+                v-model="passwordForm.old_password"
+                class="form-control mb-2"
+              />
+            </div>
+            <div>
+              <label>New Password:</label>
+              <input
+                type="password"
+                v-model="passwordForm.new_password"
+                class="form-control mb-2"
+              />
+            </div>
+            <div>
+              <label>Confirm New Password:</label>
+              <input
+                type="password"
+                v-model="passwordForm.new_password_confirm"
+                class="form-control mb-2"
+              />
+            </div>
+          </div>
+          <div v-if="modalErrorMessage" class="alert alert-danger">
+            {{ modalErrorMessage }}
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-warning"
+              @click="changePassword"
+            >
+              Update Password
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              @click="closeChangePasswordModal"
+            >
+              Close
+            </button>
+          </div>
         </div>
-        <div>
-          <label>New Password:</label>
-          <input type="password" v-model="passwordForm.new_password" class="form-control mb-2" />
-        </div>
-        <div>
-          <label>Confirm New Password:</label>
-          <input
-            type="password"
-            v-model="passwordForm.new_password_confirm"
-            class="form-control mb-2"
-          />
-        </div>
-        <button class="btn btn-primary" @click="changePassword">Submit</button>
-        <button class="btn btn-secondary" @click="showChangePassword = false">Close</button>
       </div>
+    </div>
+
+    <br>
+
+    <div v-if="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+    <div v-if="successMessage" class="alert alert-success">
+      {{ successMessage }}
     </div>
   </div>
 </template>
@@ -94,7 +168,7 @@
 import { defineComponent, ref, onMounted } from "vue";
 import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.min.css";
-import { useUserStore } from "../../stores/auth";
+import { useUserStore } from '../../stores/auth';
 
 interface Hobby {
   id: string;
@@ -137,13 +211,15 @@ export default defineComponent({
     });
     const newHobby = ref({ name: "", description: "" });
     const showNewHobbyForm = ref(false);
-
     const passwordForm = ref({
       old_password: "",
       new_password: "",
       new_password_confirm: "",
     });
-    const showChangePassword = ref(false);
+    const showPasswordModal = ref(false);
+    const errorMessage = ref<string | null>(null);
+    const modalErrorMessage = ref<string | null>(null);
+    const successMessage = ref<string | null>(null);
 
     const loadProfile = async () => {
       try {
@@ -155,19 +231,23 @@ export default defineComponent({
           },
         });
         const data = await response.json();
-        userProfile.value = data.result;
-        if (userProfile.value) {
-          editProfile.value = {
-            first_name: userProfile.value.first_name,
-            last_name: userProfile.value.last_name,
-            email: userProfile.value.email,
-            date_of_birth: userProfile.value.date_of_birth,
-            selectedHobbies: userProfile.value.hobbies.map((hobby) => hobby),
-          };
+        if (data.success === "true") {
+          userProfile.value = data.result;
+          if (userProfile.value) {
+            editProfile.value = {
+              first_name: userProfile.value.first_name,
+              last_name: userProfile.value.last_name,
+              email: userProfile.value.email,
+              date_of_birth: userProfile.value.date_of_birth,
+              selectedHobbies: userProfile.value.hobbies.map((hobby) => hobby),
+            };
+          }
+        } else {
+          errorMessage.value = data.error;
         }
-        loadHobbiesList();
       } catch (error) {
         console.error("Error loading profile:", error);
+        errorMessage.value = "An error occurred while loading profile.";
       }
     };
 
@@ -180,24 +260,33 @@ export default defineComponent({
           },
         });
         const data = await response.json();
-        hobbiesList.value = data.result;
+        if (data.success === "true") {
+          hobbiesList.value = data.result;
+        } else {
+          errorMessage.value = data.error;
+        }
       } catch (error) {
         console.error("Error loading hobbies list:", error);
+        errorMessage.value = "An error occurred while loading hobbies list.";
       }
     };
 
     const updateProfile = async () => {
+      errorMessage.value = null;
+      successMessage.value = null;
       try {
         const selectedHobbies = editProfile.value.selectedHobbies.filter(
           (hobby) => hobby && hobby.id !== "add_new"
         );
         const selectedHobbyIds = selectedHobbies.map((hobby) => hobby.id);
 
-        await fetch(`/api/profile/update/`, {
+        const csrfToken = getCookieCsrfToken();
+        const response = await fetch(`/api/profile/update/`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: "Token " + userStore.token,
+            "X-CSRFToken": csrfToken || "",
           },
           body: JSON.stringify({
             first_name: editProfile.value.first_name,
@@ -207,11 +296,16 @@ export default defineComponent({
             hobbies: selectedHobbyIds,
           }),
         });
-
-        alert("Profile updated successfully!");
-        loadProfile();
+        const data = await response.json();
+        if (data.success === "true") {
+          successMessage.value = "Profile updated successfully!";
+          loadProfile();
+        } else {
+          errorMessage.value = data.error;
+        }
       } catch (error) {
         console.error("Error updating profile:", error);
+        errorMessage.value = "An error occurred while updating profile.";
       }
     };
 
@@ -221,27 +315,57 @@ export default defineComponent({
     };
 
     const addNewHobby = async () => {
+      errorMessage.value = null;
+      successMessage.value = null;
       try {
+        const csrfToken = getCookieCsrfToken();
         const response = await fetch(`/api/hobbies/add/`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: "Token " + userStore.token,
+            "X-CSRFToken": csrfToken || "",
           },
           body: JSON.stringify(newHobby.value),
         });
         const data = await response.json();
-        hobbiesList.value.push(data.result);
-        editProfile.value.selectedHobbies.push(data.result);
-        newHobby.value = { name: "", description: "" };
-        showNewHobbyForm.value = false;
+        if (data.success === "true") {
+          hobbiesList.value.push(data.result);
+          editProfile.value.selectedHobbies.push(data.result);
+          newHobby.value = { name: "", description: "" };
+          showNewHobbyForm.value = false;
+          successMessage.value = "New hobby added successfully!";
+        } else {
+          errorMessage.value = data.error;
+        }
       } catch (error) {
         console.error("Failed to add new hobby:", error);
+        errorMessage.value = "An error occurred while adding new hobby.";
       }
     };
 
+    const showChangePasswordModal = () => {
+      showPasswordModal.value = true;
+    };
+
+    const closeChangePasswordModal = () => {
+      showPasswordModal.value = false;
+    };
+
     const changePassword = async () => {
+      modalErrorMessage.value = null;
+      successMessage.value = null;
       try {
+        if (passwordForm.value.new_password !== passwordForm.value.new_password_confirm) {
+          modalErrorMessage.value = "New passwords do not match.";
+          return;
+        }
+
+        if (passwordForm.value.new_password.length < 8) {
+          modalErrorMessage.value = "New password must be at least 8 characters long.";
+          return;
+        }
+
         const csrfToken = getCookieCsrfToken();
         const response = await fetch(`/api/profile/change_password/`, {
           method: "POST",
@@ -252,19 +376,27 @@ export default defineComponent({
           },
           body: JSON.stringify(passwordForm.value),
         });
-        if (response.status === 200) {
-          alert("Password changed successfully!");
-          showChangePassword.value = false;
+        const data = await response.json();
+        if (data.success === "true") {
+          successMessage.value = "Password changed successfully!";
+          passwordForm.value = {
+            old_password: "",
+            new_password: "",
+            new_password_confirm: "",
+          };
+          closeChangePasswordModal();
         } else {
-          alert("Failed to change password. Please try again.");
+          modalErrorMessage.value = data.error;
         }
       } catch (error) {
         console.error("Error changing password:", error);
+        modalErrorMessage.value = "An error occurred while changing password.";
       }
     };
 
     onMounted(() => {
       loadProfile();
+      loadHobbiesList();
     });
 
     return {
@@ -274,10 +406,15 @@ export default defineComponent({
       newHobby,
       showNewHobbyForm,
       passwordForm,
-      showChangePassword,
+      showPasswordModal,
+      errorMessage,
+      modalErrorMessage,
+      successMessage,
       updateProfile,
       addNewHobbyOption,
       addNewHobby,
+      showChangePasswordModal,
+      closeChangePasswordModal,
       changePassword,
     };
   },
@@ -295,7 +432,12 @@ export default defineComponent({
   border-radius: 50%;
   object-fit: cover;
 }
-.modal-overlay {
+.alert {
+  margin-bottom: 20px;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+.modal {
   position: fixed;
   top: 0;
   left: 0;
@@ -306,7 +448,8 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
 }
-.modal-content {
+.modal-dialog {
+  margin: 10% auto;
   background: white;
   padding: 20px;
   border-radius: 8px;

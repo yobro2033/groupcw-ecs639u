@@ -67,10 +67,13 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:8000",
     "http://localhost:8080",
-    "http://127.0.0.1:9000",
+    "http://127.0.0.1:8000",
+    "https://127.0.0.1:8000",
     "https://localhost:5173",
     "https://localhost:8000",
     "https://localhost:8080",
+    "https://django-psql-persistent-web-apps.apps.a.comp-teach.qmul.ac.uk",
+    "http://django-psql-persistent-web-apps.apps.a.comp-teach.qmul.ac.uk"
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -152,9 +155,6 @@ INTERNAL_IPS = ['127.0.0.1']
 LOGIN_REDIRECT_URL = "http://localhost:5173"
 LOGOUT_REDIRECT_URL = "home"
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Replace with the origin of your Vue.js app
-]
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -174,6 +174,7 @@ CORS_ALLOW_HEADERS = [
     'origin',
     'user-agent',
     'x-csrftoken',
+    'x-csrf-token',
     'x-requested-with',
 ]
 
@@ -195,4 +196,6 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:8000",
     "https://django-psql-persistent-web-apps.apps.a.comp-teach.qmul.ac.uk",
+    "http://127.0.0.1:8000",
+    "https://127.0.0.1:8000",
 ]

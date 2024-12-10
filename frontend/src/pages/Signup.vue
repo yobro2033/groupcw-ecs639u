@@ -34,6 +34,12 @@
     <div v-if="userExistsError" class="alert alert-danger">
       User already exists.
     </div>
+    <div v-if="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+    <div v-if="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
     <button type="submit" class="btn btn-primary">Sign Up</button>
   </form>
 </template>
@@ -51,15 +57,9 @@ interface Hobby {
   name: string;
 }
 
-function getCookieCsrfToken(): string | null {
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    const [name, value] = cookie.split('=');
-    if (name.trim() === "csrftoken") {
-      return value;
-    }
-  }
-  return null;
+function getCsrfToken(): string | null {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  return meta ? meta.getAttribute('content') : null;
 }
 
 export default defineComponent({
@@ -77,6 +77,8 @@ export default defineComponent({
     const hobbyOptions = ref<Hobby[]>([]);
     const passwordError = ref(false);
     const userExistsError = ref(false);
+    const errorMessage = ref<string | null>(null);
+    const successMessage = ref<string | null>(null);
 
     const fetchHobbies = async () => {
       try {
@@ -96,6 +98,8 @@ export default defineComponent({
     const submit = async () => {
       passwordError.value = false;
       userExistsError.value = false;
+      errorMessage.value = null;
+      successMessage.value = null;
 
       if (form.value.password !== form.value.confirm_password) {
         passwordError.value = true;
@@ -114,7 +118,7 @@ export default defineComponent({
       };
 
       try {
-        const csrfToken = getCookieCsrfToken();
+        const csrfToken = getCsrfToken();
         const response = await fetch(`/api/register/`, {
           method: "POST",
           headers: {
@@ -124,7 +128,7 @@ export default defineComponent({
           body: JSON.stringify(requestBody),
         });
         const data = await response.json();
-        if (data.success) {
+        if (data.success === "true") {
           // login after signup
           const requestOptions = {
             method: "POST",
@@ -136,23 +140,25 @@ export default defineComponent({
           }
 
           const signup = await fetch(`/api/login/`, requestOptions)
-          if (!signup.ok){
-              alert("Signup successful, but login failed. Please try logging in.")
+          const loginData = await signup.json() 
+          if (loginData.success === "true") {
+            const userStore = useUserStore();
+            userStore.login(loginData.result.user, loginData.result.access_token)
+            router.push('/dashboard')
+            successMessage.value = "Signup and login successful!";
+          } else {
+            errorMessage.value = "Signup successful, but login failed. Error: " + loginData.error;
           }
-          const data = await signup.json() 
-          const userStore = useUserStore();
-          userStore.login(data.result.user, data.result.access_token)
-          router.push('/dashboard')
-          alert("Signup successful");
         } else {
           if (data.error === "User already exists") {
             userExistsError.value = true;
           } else {
-            alert("Signup failed: " + data.error);
+            errorMessage.value = "Signup failed: " + data.error;
           }
         }
       } catch (error) {
         console.error("Error during signup:", error);
+        errorMessage.value = "An error occurred during signup. Please try again.";
       }
     };
 
@@ -162,6 +168,8 @@ export default defineComponent({
       hobbyOptions,
       passwordError,
       userExistsError,
+      errorMessage,
+      successMessage,
       submit,
     };
   },

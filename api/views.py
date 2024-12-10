@@ -405,7 +405,11 @@ def create_new_hobby(request: HttpRequest) -> JsonResponse:
                     form.save()
                     hobby = Hobbies.objects.get(name=data['name'])
                     return JsonResponse({'result': {'id': hobby.id, 'name': hobby.name}, 'success': 'true'}, status=201)
-                return JsonResponse(form.errors, status=400)
+                listFormErrors = ""
+                for key, value in form.errors.items():
+                    for error in value:
+                        listFormErrors += f"{key}: {error}\n"
+                return JsonResponse({'error': listFormErrors, 'success': 'false'}, status=400)
             except json.JSONDecodeError:
                 return JsonResponse({'error': 'Invalid JSON format'}, status=400)
     except Exception as e:
@@ -452,7 +456,10 @@ def login(request : HttpRequest) -> JsonResponse:
             data = request.data
             username = data.get('username')
             password = data.get('password')
-            user = User.objects.get(username=username)
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return JsonResponse({'error': 'Invalid credentials', 'success': 'false'}, status=400) # Prevent user enumeration
             if user.check_password(password):
                 token, created = Token.objects.get_or_create(user=user)
                 return JsonResponse({'result': {'message': 'Successfully logged in!', 'access_token': token.key, 'user': username}, 'success': 'true'}, status=200)
@@ -480,7 +487,11 @@ def sign_up(request : HttpRequest) -> JsonResponse:
                 new_user = form.save()
                 new_user.hobbies.set(data['hobbies'])
                 return JsonResponse({'result': {'message': 'Successfully created an account!'}, 'success': 'true'}, status=201)
-            return JsonResponse(form.errors, status=400)
+            listFormErrors = ""
+            for key, value in form.errors.items():
+                for error in value:
+                    listFormErrors += f"{key}: {error}\n"
+            return JsonResponse({'error': listFormErrors, 'success': 'false'}, status=400)
         else:
             return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
     except Exception as e:

@@ -16,8 +16,8 @@
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
         <ul class="navbar-nav">
           <!-- Friend Requests Dropdown -->
-          <li class="nav-item">
-            <div class="dropdown-container" v-click-outside="closeDropdown" @click="fetchRequests()">
+          <li class="nav-item" @click="fetchRequests()">
+            <div class="dropdown-container" v-click-outside="closeDropdown">
               <button @click="toggleDropdown" class="nav-link dropdown-button">
                 Friend Requests
               </button>
@@ -120,7 +120,7 @@
                       >
                         Remove
                       </button>
-                      </div>
+                    </div>
                   </div>
                 </div>
                 <p v-if="friends_list.length === 0" class="no-requests">
@@ -146,8 +146,259 @@
   </nav>
 </template>
 
+<script lang="ts">
+import { defineComponent, ref } from "vue";
+import router from "../../router";
+import { useUserStore } from "../../../stores/auth";
+
+interface Request {
+  id: string;
+  profile_image: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+interface Friend {
+  id: string;
+  profile_image: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+function getCookieCsrfToken(): string | null {
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.split('=');
+    if (name.trim() === "csrftoken") {
+      return value;
+    }
+  }
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  if (meta) {
+    return meta.getAttribute('content');
+  }
+  return null;
+}
+
+export default defineComponent({
+  directives: {
+    clickOutside: {
+      beforeMount(el, binding) {
+        el.clickOutsideEvent = (event: Event) => {
+          if (!(el === event.target || el.contains(event.target))) {
+            binding.value();
+          }
+        };
+        document.body.addEventListener("click", el.clickOutsideEvent);
+      },
+      unmounted(el) {
+        document.body.removeEventListener("click", el.clickOutsideEvent);
+      },
+    },
+  },
+  data() {
+    return {
+      showDropdown: false,
+      showFriendsDropdown: false,
+      activeTab: "received",
+      requests: [] as Request[],
+      friends_list: [] as Friend[],
+      errorMessage: ref<string | null>(null),
+      successMessage: ref<string | null>(null),
+    };
+  },
+  setup() {
+    const userStore = useUserStore();
+    return { userStore };
+  },
+  methods: {
+    toggleDropdown() {
+      this.showDropdown = !this.showDropdown;
+    },
+    closeDropdown() {
+      this.showDropdown = false;
+    },
+    toggleFriendsDropdown() {
+      this.showFriendsDropdown = !this.showFriendsDropdown;
+    },
+    closeFriendsDropdown() {
+      this.showFriendsDropdown = false;
+    },
+    setTab(activeTab: string) {
+      this.activeTab = activeTab;
+      this.fetchRequests();
+    },
+    async fetchRequests() {
+      const endpoint =
+        this.activeTab === "received"
+          ? `/api/friend_requests/`
+          : `/api/sent_requests/`;
+      try {
+        const response = await fetch(endpoint, {
+          headers: {
+            Authorization: "Token " + this.userStore.token,
+          },
+        });
+        const data = await response.json();
+        if (data.success === "true") {
+          this.requests = data.result;
+        } else {
+          this.errorMessage = data.error;
+          setTimeout(() => {
+            this.errorMessage = null;
+          }, 5000);
+        }
+      } catch (error) {
+        console.error("Error fetching requests:", error);
+        this.errorMessage = "An error occurred while fetching requests.";
+        setTimeout(() => {
+          this.errorMessage = null;
+        }, 5000);
+      }
+    },
+    async fetchFriends() {
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/friends/", {
+          headers: {
+            Authorization: "Token " + this.userStore.token,
+          },
+        });
+        const data = await response.json();
+        if (data.success === "true") {
+          this.friends_list = data.result;
+        } else {
+          this.errorMessage = data.error;
+          setTimeout(() => {
+            this.errorMessage = null;
+          }, 5000);
+        }
+      } catch (error) {
+        console.error("Error fetching friends:", error);
+        this.errorMessage = "An error occurred while fetching friends.";
+        setTimeout(() => {
+          this.errorMessage = null;
+        }, 5000);
+      }
+    },
+    async acceptRequest(id: string) {
+      await this.handleRequest(
+        `/api/friend_request/accept/${id}/`,
+        "Accepted",
+        "POST"
+      );
+    },
+    async unfriendRequest(id: string) {
+      await this.handleRequest(
+        `/api/friend/remove/${id}/`,
+        "Unfriended",
+        "DELETE"
+      );
+    },
+    async rejectRequest(id: string) {
+      await this.handleRequest(
+        `/api/friend_request/reject/${id}/`,
+        "Rejected",
+        "PUT"
+      );
+    },
+    async cancelRequest(id: string) {
+      await this.handleRequest(
+        `/api/sent_request/remove/${id}/`,
+        "Canceled",
+        "DELETE"
+      );
+    },
+    async handleRequest(url: string, action: string, method: string) {
+      try {
+        const csrfToken = getCookieCsrfToken();
+        if (method === "DELETE") {
+          const response = await fetch(url, {
+            method,
+            headers: {
+              Authorization: "Token " + this.userStore.token,
+              "X-CSRFToken": csrfToken || "",
+            },
+          });
+          const data = await response;
+          if (data.status === 204) {
+            this.fetchRequests();
+            this.successMessage = `${action} request successfully.`;
+            setTimeout(() => {
+              this.successMessage = null;
+            }, 5000);
+          } else {
+            this.errorMessage = "An error occurred while handling request.";
+            setTimeout(() => {
+              this.errorMessage = null;
+            }, 5000);
+          }
+          return;
+        } else {
+          const response = await fetch(url, {
+            method,
+            headers: {
+              Authorization: "Token " + this.userStore.token,
+              "X-CSRFToken": csrfToken || "",
+            },
+          });
+          const data = await response.json();
+          if (data.success === "true") {
+            this.fetchRequests();
+            this.successMessage = `${action} request successfully.`;
+            setTimeout(() => {
+              this.successMessage = null;
+            }, 5000);
+          } else {
+            this.errorMessage = data.error;
+            setTimeout(() => {
+              this.errorMessage = null;
+            }, 5000);
+          }
+        }
+      } catch (error) {
+        console.error("Error handling request:", error);
+        this.errorMessage = `An error occurred while ${action.toLowerCase()} request.`;
+        setTimeout(() => {
+          this.errorMessage = null;
+        }, 5000);
+      }
+    },
+    async logout() {
+      const csrfToken = getCookieCsrfToken();
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Token " + this.userStore.token,
+          "X-CSRFToken": csrfToken || "",
+        },
+      };
+      const loggedOut = await fetch(
+        `/api/logout/`,
+        requestOptions
+      );
+      const data = await loggedOut.json();
+      if (data.success === "true") {
+        this.successMessage = "Logged out successfully";
+        setTimeout(() => {
+          this.successMessage = null;
+        }, 5000);
+        this.userStore.logout();
+        router.push({ path: "/" });
+      } else {
+        this.errorMessage = "Error logging out";
+        setTimeout(() => {
+          this.errorMessage = null;
+        }, 5000);
+      }
+    },
+  },
+});
+</script>
+
 <style scoped>
-/* Navbar Styles */
 .nav-bar-item:hover {
   cursor: pointer;
 }
@@ -238,178 +489,3 @@
   margin-top: 10px;
 }
 </style>
-
-<script lang="ts">
-import { defineComponent } from "vue";
-import router from "../../router";
-import { useUserStore } from "../../../stores/auth";
-import { Request, Friend } from "../../types";
-
-function getCookieCsrfToken(): string | null {
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    const [name, value] = cookie.split('=');
-    if (name.trim() === "csrftoken") {
-      return value;
-    }
-  }
-  return null;
-}
-
-export default defineComponent({
-  data() {
-    return {
-      showDropdown: false,
-      showFriendsDropdown: false,
-      activeTab: "received",
-      requests: [] as Request[],
-      friends_list: [] as Friend[],
-    };
-  },
-  setup() {
-    const userStore = useUserStore();
-    return { userStore };
-  },
-  methods: {
-    toggleDropdown() {
-      this.showDropdown = !this.showDropdown;
-    },
-    closeDropdown() {
-      this.showDropdown = false;
-    },
-    toggleFriendsDropdown() {
-      this.showFriendsDropdown = !this.showFriendsDropdown;
-    },
-    closeFriendsDropdown() {
-      this.showFriendsDropdown = false;
-    },
-    setTab(activeTab: string) {
-      this.activeTab = activeTab;
-      this.fetchRequests();
-    },
-    async fetchRequests() {
-      const endpoint =
-        this.activeTab === "received"
-          ? `/api/friend_requests/`
-          : `/api/sent_requests/`;
-      try {
-        const response = await fetch(endpoint, {
-          headers: {
-            Authorization: "Token " + this.userStore.token,
-          },
-        });
-        const data = await response.json();
-        if (data.success === "true") {
-          this.requests = data.result;
-        } else {
-          console.error("Failed to fetch requests:", data.error);
-        }
-      } catch (error) {
-        console.error("Error fetching requests:", error);
-      }
-    },
-    async fetchFriends() {
-      try {
-        console.log("Fetching friends");
-        const response = await fetch(`/api/friends/`, {
-          headers: {
-            Authorization: "Token " + this.userStore.token,
-          },
-        });
-        const data = await response.json();
-        if (data.success === "true") {
-          this.friends_list = data.result;
-        } else {
-          console.error("Failed to fetch friends:", data.error);
-        }
-      } catch (error) {
-        console.error("Error fetching friends:", error);
-      }
-    },
-    async acceptRequest(id: string) {
-      await this.handleRequest(
-        `/api/friend_request/accept/${id}/`,
-        "Accepted",
-        "POST"
-      );
-    },
-    async unfriendRequest(id: string) {
-      await this.handleRequest(
-        `/api/friend/remove/${id}/`,
-        "Unfriended",
-        "DELETE"
-      );
-    },
-    async rejectRequest(id: string) {
-      await this.handleRequest(
-        `/api/friend_request/reject/${id}/`,
-        "Rejected",
-        "PUT"
-      );
-    },
-    async cancelRequest(id: string) {
-      await this.handleRequest(
-        `/api/sent_request/remove/${id}/`,
-        "Canceled",
-        "DELETE"
-      );
-    },
-    async handleRequest(url: string, action: string, method: string) {
-      try {
-        var requestOptions = {};
-        if (method === "POST") {
-          const csrfToken = getCookieCsrfToken();
-          requestOptions = {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Token " + this.userStore.token,
-              "X-CSRFToken": csrfToken || "",
-            },
-          };
-        } else {
-          requestOptions = {
-            method: method,
-            headers: {
-              Authorization: "Token " + this.userStore.token,
-            },
-          };
-        }
-        const response = await fetch(url, requestOptions);
-        const data = await response.json();
-        if (data.success === "true") {
-          this.fetchRequests();
-          alert(`${action} request successfully.`);
-        } else {
-          alert(`Failed to ${action.toLowerCase()} request.`);
-        }
-      } catch (error) {
-        console.error("Error handling request:", error);
-      }
-    },
-    async logout() {
-      const csrfToken = getCookieCsrfToken();
-      const requestOptions = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Token " + this.userStore.token,
-          "X-CSRFToken": csrfToken || "",
-        },
-      };
-      const loggedOut = await fetch(
-        `/api/logout/`,
-        requestOptions
-      );
-      const data = await loggedOut.json();
-      if (data.success === "true") {
-        alert("Logged out successfully");
-        this.userStore.logout();
-        router.push({ path: "/" });
-      } else {
-        console.error("Error logging out");
-      }
-    },
-  },
-});
-</script>
