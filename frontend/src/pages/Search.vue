@@ -154,10 +154,10 @@ export default defineComponent({
   setup() {
     const userStore = useUserStore();
     const searchTerm = ref<string>("");
-    const l_age = ref<number>(18);
+    const l_age = ref<number>(12);
     const u_age = ref<number>(60);
     const users = ref<User[]>([]);
-    const minAge = 18;
+    const minAge = 12;
     const maxAge = 100;
     const errorMessage = ref<string | null>(null);
     const successMessage = ref<string | null>(null);
