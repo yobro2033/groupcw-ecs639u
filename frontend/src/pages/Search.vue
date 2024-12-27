@@ -165,7 +165,7 @@ export default defineComponent({
     const searchUsers = async () => {
       errorMessage.value = null;
       successMessage.value = null;
-      if (searchTerm.value !== "") {
+      if (searchTerm.value !== "" || searchTerm.value === "") {
         try {
           const response = await fetch(
             `/api/users/?search=${searchTerm.value}&l_age=${l_age.value}&u_age=${u_age.value}`,
