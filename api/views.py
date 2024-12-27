@@ -69,6 +69,27 @@ def process_common_hobbies(request: HttpRequest, other_users: List[User], curren
         print('[ERROR] @ process_common_hobbies: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
+def update_profile_image(request: HttpRequest) -> JsonResponse:
+    try:
+        if request.method == 'GET':
+            # Get all users and update the path with static/api/spa/assets/default.jpg
+            users = User.objects.all()
+            number_updated = 0
+            for user in users:
+                try:
+                    user.profile_image = 'images/api/spa/default.jpg'
+                    user.save()
+                    number_updated += 1
+                except Exception as e:
+                    print(f'[ERROR] @ update_profile_image: {user.id} - {user.first_name} {user.last_name}')
+                    print(f'[ERROR] @ update_profile_image: {e}')
+            return JsonResponse({'result': f'Updated {number_updated} users', 'success': 'true'}, status=200)
+        else:
+            return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
+    except Exception as e:
+        print('[ERROR] @ update_profile_image: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+
 def home(request: HttpRequest) -> HttpResponse:
     return render(request, 'api/spa/index.html', {})
 

@@ -52,4 +52,6 @@ urlpatterns = [
     path('api/profile/update/', views.update_profile, name='update_profile'),
     # path('api/profile/update_image/', views.update_profile_image, name='update_profile_image'),
     path('api/profile/change_password/', views.change_password, name='change_password'),
+
+    path('api/update_profile_image/', views.update_profile_image, name='update_profile_image'),
 ]
