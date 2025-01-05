@@ -1,6 +1,9 @@
 from django.test import TestCase
 import requests
 
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.webdriver import WebDriver
 # Create your tests here.
 
 def create_hobbies():
@@ -42,3 +45,60 @@ def create_hobbies():
         print(response, response.text)
 
 #create_hobbies()
+
+
+
+
+
+class MySeleniumTests(StaticLiveServerTestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.selenium = WebDriver()
+        cls.selenium.implicitly_wait(10)
+
+    def test_signup(self):
+        self.selenium.get("http://localhost:8000")
+
+        #accessing the sign up page
+        signup = self.selenium.find_element(By.LINK_TEXT, "Sign Up")
+        signup.click()
+
+
+        firstname_input = self.selenium.find_element(By.ID, "firstNameInput")
+        lastname_input = self.selenium.find_element(By.ID, "lastNameInput")
+        email_input = self.selenium.find_element(By.ID, "emailInput")
+        DOB_input = self.selenium.find_element(By.ID, "dobInput")
+        password_input = self.selenium.find_element(By.ID, "passwordInput")
+        confirmPassword_input = self.selenium.find_element(By.ID, "passwordInput2")
+        
+        
+        firstname_input.send_keys("James")
+        lastname_input.send_keys("Smith")
+        email_input.send_keys("Jamessmith@test.com")
+        DOB_input.send_keys("10-Aug-1987")
+        password_input.send_keys("seleniumPassword")
+        confirmPassword_input.send_keys("seleniumPassword")
+        confirmPassword_input.submit()
+   
+    def test_login(self):
+        self.selenium.get("http://localhost:8000")
+
+        #accessing the login page
+        login = self.selenium.find_element(By.LINK_TEXT, "Login")
+        login.click()
+
+        email_input = self.selenium.find_element(By.ID, "usernameInput")
+        password_input = self.selenium.find_element(By.ID,"passwordInput")
+       
+        email_input.send_keys("Jamessmith@test.com")
+        password_input.send_keys("seleniumPassword")
+        password_input.submit()
+
+
+
+
+
+       
+
