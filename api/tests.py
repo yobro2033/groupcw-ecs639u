@@ -4,6 +4,7 @@ import requests
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.common.keys import Keys
 # Create your tests here.
 
 def create_hobbies():
@@ -57,14 +58,21 @@ class MySeleniumTests(StaticLiveServerTestCase):
         super().setUpClass()
         cls.selenium = WebDriver()
         cls.selenium.implicitly_wait(10)
+        
+    
+    # @classmethod
+    # def tearDownClass(cls):
+    #     cls.selenium.quit()
+    #     super().tearDownClass()
 
+
+    #manually run test, python manage.py api.tests.MySeleniumTests.test_signup``
     def test_signup(self):
         self.selenium.get("http://localhost:8000")
 
         #accessing the sign up page
         signup = self.selenium.find_element(By.LINK_TEXT, "Sign Up")
         signup.click()
-
 
         firstname_input = self.selenium.find_element(By.ID, "firstNameInput")
         lastname_input = self.selenium.find_element(By.ID, "lastNameInput")
@@ -73,15 +81,17 @@ class MySeleniumTests(StaticLiveServerTestCase):
         password_input = self.selenium.find_element(By.ID, "passwordInput")
         confirmPassword_input = self.selenium.find_element(By.ID, "passwordInput2")
         
-        
         firstname_input.send_keys("James")
         lastname_input.send_keys("Smith")
         email_input.send_keys("Jamessmith@test.com")
-        DOB_input.send_keys("10-Aug-1987")
+        DOB_input.send_keys("10-09-1987")
         password_input.send_keys("seleniumPassword")
         confirmPassword_input.send_keys("seleniumPassword")
         confirmPassword_input.submit()
    
+
+
+    #manually run test, python manage.py api.tests.MySeleniumTests.test_login
     def test_login(self):
         self.selenium.get("http://localhost:8000")
 
@@ -96,12 +106,53 @@ class MySeleniumTests(StaticLiveServerTestCase):
         password_input.send_keys("seleniumPassword")
         password_input.submit()
 
+
+
+    #manually run test, python manage.py api.tests.MySeleniumTests.test_editing_info
     def test_editing_info(self):
-        pass
+        self.test_login()
 
+        firstnameChange = self.selenium.find_element(By.XPATH, "html/body/div/main/div/div/div/div/div[1]/input")
+        lastnameChange = self.selenium.find_element(By.XPATH, "html/body/div/main/div/div/div/div/div[2]/input")
+        emailChange = self.selenium.find_element(By.XPATH, "html/body/div/main/div/div/div/div/div[3]/input")
+        DOBChange = self.selenium.find_element(By.XPATH, "html/body/div/main/div/div/div/div/div[4]/input")
+        submit = self.selenium.find_element(By.CLASS_NAME, "btn-primary")
+
+        firstnameChange.clear()
+        firstnameChange.send_keys("newFirst")
+
+        lastnameChange.clear()
+        lastnameChange.send_keys("NewLast")
+
+        emailChange.clear()
+        emailChange.send_keys("ChangedEmail@test.com")
+
+        DOBChange.clear()
+        DOBChange.send_keys("17-02-2000")
+
+        submit.click()
+
+        #change password is not working yet, testing will be implemented when fixed 
+
+    #manually run test, python manage.py api.tests.MySeleniumTests.test_filtering_age
     def test_filtering_age(self):
-        pass
+        self.test_login()
 
+        search = self.selenium.find_element(By.LINK_TEXT, "Search")
+        search.click()
+
+        ageSliderLower = self.selenium.find_element(By.XPATH, "html/body/div/main/div/div/div/div/input[1]")
+        ageSliderUpper = self.selenium.find_element(By.XPATH, "html/body/div/main/div/div/div/div/input[2]")
+
+        for i in range(8):
+            ageSliderLower.send_keys(Keys.RIGHT)
+        
+        for i in range(30):
+            ageSliderUpper.send_keys(Keys.LEFT)
+
+
+
+    #manually run test, python manage.py api.tests.MySeleniumTests.test_send_friend_request
     def test_send_friend_request(self):
         self.test_login()
 
@@ -111,6 +162,9 @@ class MySeleniumTests(StaticLiveServerTestCase):
         sendRequest = self.selenium.find_element(By.CLASS_NAME, "btn-primary")
         sendRequest.click()
 
+
+
+    #manually run test, python manage.py api.tests.MySeleniumTests.test_receive_friend_request
     def test_receive_friend_request(self):
         self.test_login()
 
