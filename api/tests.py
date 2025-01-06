@@ -96,9 +96,26 @@ class MySeleniumTests(StaticLiveServerTestCase):
         password_input.send_keys("seleniumPassword")
         password_input.submit()
 
+    def test_editing_info(self):
+        pass
 
+    def test_filtering_age(self):
+        pass
 
+    def test_send_friend_request(self):
+        self.test_login()
 
+        friendRequests = self.selenium.find_element(By.LINK_TEXT, "Search")
+        friendRequests.click()
 
-       
+        sendRequest = self.selenium.find_element(By.CLASS_NAME, "btn-primary")
+        sendRequest.click()
 
+    def test_receive_friend_request(self):
+        self.test_login()
+
+        friendRequests = self.selenium.find_element(By.LINK_TEXT, "Search")
+        friendRequests.click()
+
+        sendRequest = self.selenium.find_element(By.CLASS_NAME, "btn-success")
+        sendRequest.click()
