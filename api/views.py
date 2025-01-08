@@ -6,10 +6,12 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, BasePermission
 from .models import User, Hobbies
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import AuthenticationForm
 from django.core.paginator import Paginator
 from django.utils.timezone import datetime
-from .forms import UserCreateForm, UserEditForm, PasswordEditForm, HobbiesForm
+from .forms import UserCreateForm, UserEditForm, PasswordEditForm, HobbiesForm, LoginForm
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_protect
 
@@ -537,3 +539,29 @@ def logout(request : HttpRequest) -> JsonResponse:
     except Exception as e:
         print('[ERROR] @ logout: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+    
+def signup_view(request):
+    if request.method == 'POST':
+        form = UserCreateForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = UserCreateForm()
+    return render(request, 'signup.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = LoginForm(data=request.POST)
+        if form.is_valid():
+            user = authenticate(
+                username=form.cleaned_data['username'], 
+                password=form.cleaned_data['password']
+            )
+            if user:
+                login(request, user)
+                return redirect('home')
+    else:
+        form = LoginForm()
+    return render(request, 'login.html', {'form': form})
