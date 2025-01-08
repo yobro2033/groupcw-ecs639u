@@ -55,6 +55,6 @@ urlpatterns = [
     path('api/profile/change_password/', views.change_password, name='change_password'),
 
     #path('api/update_profile_image/', views.update_profile_image, name='update_profile_image'),
-    path('signup/', signup_view, name='signup'),
-    path('login/', login_view, name='login'),
+    path('signup/', views.signup_view, name='signup'),
+    path('login/', views.login_view, name='login'),
 ]
