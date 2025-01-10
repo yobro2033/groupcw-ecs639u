@@ -537,28 +537,28 @@ def logout(request : HttpRequest) -> JsonResponse:
         print('[ERROR] @ logout: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
     
+def login_view(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            user = authenticate(
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password']
+            )
+            if user:
+                login(request, user)
+                return redirect('home')
+    else:
+        form = LoginForm()
+    return render(request, 'registration/login.html', {'form': form})
+
 def signup_view(request):
     if request.method == 'POST':
         form = UserCreateForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('login')
+            return redirect('home')
     else:
         form = UserCreateForm()
     return render(request, 'registration/signup.html', {'form': form})
-
-def login_view(request):
-    if request.method == 'POST':
-        form = LoginForm(data=request.POST)
-        if form.is_valid():
-            user = authenticate(
-                username=form.cleaned_data['username'], 
-                password=form.cleaned_data['password']
-            )
-            if user:
-                login(request, user)
-                return redirect('dashboard')
-    else:
-        form = LoginForm()
-    return render(request, 'registration/login.html', {'form': form})

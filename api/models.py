@@ -25,7 +25,6 @@ class User(AbstractUser):
     last_name: str = models.CharField(max_length=254)
     email: str = models.EmailField(max_length=254)
     date_of_birth: Any = models.DateField()
-    password: str = models.CharField(max_length=254, validators=[MinLengthValidator(8)])
     hobbies: Any = models.ManyToManyField(Hobbies, default=None, blank=True)
     friends: Any = models.ManyToManyField('self', default=None, blank=True)
     pending_requests: Any = models.ManyToManyField('self', default=None, blank=True, symmetrical=False, related_name='incoming_requests')
