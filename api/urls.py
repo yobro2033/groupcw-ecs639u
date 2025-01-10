@@ -17,7 +17,6 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 from django.http import HttpResponse
-from .views import signup_view, login_view
 
 from . import views
 
@@ -55,6 +54,4 @@ urlpatterns = [
     path('api/profile/change_password/', views.change_password, name='change_password'),
 
     #path('api/update_profile_image/', views.update_profile_image, name='update_profile_image'),
-    path('signup/', views.signup_view, name='signup'),
-    path('login/', views.login_view, name='login'),
 ]

@@ -95,9 +95,6 @@ def update_profile_image(request: HttpRequest) -> JsonResponse:
 def home(request: HttpRequest) -> HttpResponse:
     return render(request, 'api/spa/index.html', {})
 
-@api_view(['GET'])
-def login_view(request: HttpRequest) -> HttpResponse:
-    return render(request, 'templates/registration/login.html', {})
 
 @api_view(['GET'])
 def logout_view(request: HttpRequest) -> HttpResponse:
@@ -546,10 +543,10 @@ def signup_view(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('home')
+            return redirect('login')
     else:
         form = UserCreateForm()
-    return render(request, 'signup.html', {'form': form})
+    return render(request, 'registration/signup.html', {'form': form})
 
 def login_view(request):
     if request.method == 'POST':
@@ -561,7 +558,7 @@ def login_view(request):
             )
             if user:
                 login(request, user)
-                return redirect('home')
+                return redirect('dashboard')
     else:
         form = LoginForm()
-    return render(request, 'login.html', {'form': form})
+    return render(request, 'registration/login.html', {'form': form})

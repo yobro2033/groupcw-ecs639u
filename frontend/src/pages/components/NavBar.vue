@@ -7,8 +7,8 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
           <ul class="navbar-nav">
-            <li><router-link class="nav-link" to="/Login">Login</router-link></li>
-            <li><router-link class="nav-link" to="/Signup">Sign Up</router-link></li>
+            <li><a class="nav-link" href="/templates/registration/login.html">Login</a></li>
+            <li><a class="nav-link" href="/templates/registration/signup.html">Sign Up</a></li>
           </ul>
         </div>
       </div>

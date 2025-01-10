@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
+from api.views import login_view, signup_view
 from django.http import HttpResponse
 
 
@@ -23,4 +24,6 @@ urlpatterns = [
     path('', include('api.urls')),
     path('health', lambda request: HttpResponse("OK")),
     path('admin/', admin.site.urls),
+    path('login/', login_view, name='login'),
+    path('signup/', signup_view, name='signup'),
 ]
