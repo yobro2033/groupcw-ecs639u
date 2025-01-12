@@ -1,33 +1,38 @@
+import datetime
 import json
-import sys
-from typing import List, Dict, Any, Union
-from django.http import HttpResponse, HttpRequest, JsonResponse
-from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, BasePermission
-from .models import User, Hobbies
-from django.shortcuts import render, redirect, get_object_or_404
+from typing import List
+
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from django.http import HttpResponse, HttpRequest
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.timezone import datetime
-from .forms import UserCreateForm, UserEditForm, PasswordEditForm, HobbiesForm, LoginForm
-from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_protect
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import BasePermission
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+
+from .forms import UserCreateForm, HobbiesForm, LoginForm
+from .models import Hobbies, User
+
 
 def main_spa(request: HttpRequest) -> HttpResponse:
     return render(request, 'api/spa/index.html', {})
+
 
 class Hobby:
     def __init__(self, name: str, description: str):
         self.name = name
         self.description = description
-    
+
     def to_dict(self) -> dict:
         return {
             'name': self.name,
             'description': self.description
         }
+
 
 def process_common_hobbies(request: HttpRequest, other_users: List[User], current_user_hobbies: set) -> JsonResponse:
     try:
@@ -71,6 +76,7 @@ def process_common_hobbies(request: HttpRequest, other_users: List[User], curren
         print('[ERROR] @ process_common_hobbies: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
+
 def update_profile_image(request: HttpRequest) -> JsonResponse:
     try:
         if request.method == 'GET':
@@ -92,6 +98,7 @@ def update_profile_image(request: HttpRequest) -> JsonResponse:
         print('[ERROR] @ update_profile_image: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
+
 def home(request: HttpRequest) -> HttpResponse:
     return render(request, 'api/spa/index.html', {})
 
@@ -100,9 +107,11 @@ def home(request: HttpRequest) -> HttpResponse:
 def logout_view(request: HttpRequest) -> HttpResponse:
     return render(request, 'templates/registration/login.html', {})
 
+
 @api_view(['GET'])
 def register_view(request: HttpRequest) -> HttpResponse:
     return render(request, 'templates/registration/signup.html', {})
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticatedOrReadOnly])
@@ -118,6 +127,7 @@ def get_hobbies(request: HttpRequest) -> JsonResponse:
         print('[ERROR] @ get_hobbies: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def match_users_by_hobbies(request: HttpRequest) -> JsonResponse:
@@ -132,6 +142,7 @@ def match_users_by_hobbies(request: HttpRequest) -> JsonResponse:
     except Exception as e:
         print('[ERROR] @ match_users_by_hobbies: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -149,6 +160,7 @@ def get_user_profile(request: HttpRequest, user_id: int) -> JsonResponse:
         return JsonResponse({'result': user_data, 'success': 'true'}, status=200)
     else:
         return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -168,6 +180,7 @@ def get_my_profile(request: HttpRequest) -> JsonResponse:
     else:
         return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
 
+
 @api_view(['POST'])
 @csrf_protect
 @permission_classes([IsAuthenticated])
@@ -186,11 +199,12 @@ def send_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
 
         if friend in current_user.pending_requests.all():
             return JsonResponse({'error': 'Friend request already received', 'success': 'false'}, status=400)
-        
+
         current_user.sent_requests.add(friend)
         friend.pending_requests.add(current_user)
 
         return JsonResponse({'result': 'Friend request sent', 'success': 'true'}, status=200)
+
 
 @api_view(['POST'])
 @csrf_protect
@@ -210,6 +224,7 @@ def accept_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
         friend.friends.add(current_user)
 
         return JsonResponse({'result': 'Friend request accepted', 'success': 'true'}, status=200)
+
 
 @api_view(['POST'])
 @csrf_protect
@@ -232,6 +247,7 @@ def reject_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
     except Exception as e:
         print('[ERROR] @ reject_friend_request: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -256,6 +272,7 @@ def get_friends(request: HttpRequest) -> JsonResponse:
         print('[ERROR] @ get_friends: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_friend_requests(request: HttpRequest) -> JsonResponse:
@@ -278,6 +295,7 @@ def get_friend_requests(request: HttpRequest) -> JsonResponse:
     except Exception as e:
         print('[ERROR] @ get_friend_requests: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -302,6 +320,7 @@ def get_sent_requests(request: HttpRequest) -> JsonResponse:
         print('[ERROR] @ get_sent_requests: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
+
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def remove_friend(request: HttpRequest, user_id: int) -> JsonResponse:
@@ -322,6 +341,7 @@ def remove_friend(request: HttpRequest, user_id: int) -> JsonResponse:
     except Exception as e:
         print('[ERROR] @ remove_friend: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
@@ -344,6 +364,7 @@ def remove_sent_request(request: HttpRequest, user_id: int) -> JsonResponse:
         print('[ERROR] @ remove_sent_request: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
+
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def remove_received_request(request: HttpRequest, user_id: int) -> JsonResponse:
@@ -355,7 +376,8 @@ def remove_received_request(request: HttpRequest, user_id: int) -> JsonResponse:
             friend = get_object_or_404(User, id=user_id)
 
             if friend not in current_user.pending_requests.all():
-                return JsonResponse({'error': 'No friend request received from this user', 'success': 'false'}, status=400)
+                return JsonResponse({'error': 'No friend request received from this user', 'success': 'false'},
+                                    status=400)
 
             current_user.pending_requests.remove(friend)
             friend.sent_requests.remove(current_user)
@@ -364,6 +386,7 @@ def remove_received_request(request: HttpRequest, user_id: int) -> JsonResponse:
     except Exception as e:
         print('[ERROR] @ remove_received_request: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+
 
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
@@ -390,6 +413,7 @@ def update_profile(request: HttpRequest) -> JsonResponse:
         print('[ERROR] @ update_profile: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
+
 @api_view(['POST'])
 @csrf_protect
 @permission_classes([IsAuthenticated])
@@ -410,6 +434,7 @@ def change_password(request: HttpRequest) -> JsonResponse:
     except Exception as e:
         print('[ERROR] @ change_password: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
@@ -452,7 +477,8 @@ def search_users(request: HttpRequest) -> JsonResponse:
             if search_kw:
                 # filter if first_name, last_name, email contains search_kw, this includes contains part of the string
                 if search_kw != '':
-                    users = users.filter(first_name__icontains=search_kw) | users.filter(last_name__icontains=search_kw) | users.filter(email__icontains=search_kw)
+                    users = users.filter(first_name__icontains=search_kw) | users.filter(
+                        last_name__icontains=search_kw) | users.filter(email__icontains=search_kw)
             if l_age:
                 current_year = datetime.now().year
                 l_year = current_year - int(l_age)
@@ -468,22 +494,34 @@ def search_users(request: HttpRequest) -> JsonResponse:
         print('[ERROR] @ search_users: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_protect
+from rest_framework.decorators import api_view
+from rest_framework.authtoken.models import Token
+from api.models import User  # 假设用户模型在 api 应用中
+import sys
+
+
 @api_view(['POST'])
-@csrf_protect
 @permission_classes([BasePermission])
-def login(request : HttpRequest) -> JsonResponse:
+def login(request: HttpRequest) -> JsonResponse:
     try:
         if request.method == 'POST':
             data = request.data
+            print(data)
             username = data.get('username')
             password = data.get('password')
             try:
                 user = User.objects.get(username=username)
             except User.DoesNotExist:
-                return JsonResponse({'error': 'Invalid credentials', 'success': 'false'}, status=400) # Prevent user enumeration
+                return JsonResponse({'error': 'Invalid credentials', 'success': 'false'},
+                                    status=400)  # Prevent user enumeration
             if user.check_password(password):
                 token, created = Token.objects.get_or_create(user=user)
-                return JsonResponse({'result': {'message': 'Successfully logged in!', 'access_token': token.key, 'user': username}, 'success': 'true'}, status=200)
+                return JsonResponse(
+                    {'result': {'message': 'Successfully logged in!', 'access_token': token.key, 'user': username},
+                     'success': 'true'}, status=200)
             return JsonResponse({'error': 'Invalid credentials', 'success': 'false'}, status=400)
         else:
             return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
@@ -491,40 +529,62 @@ def login(request : HttpRequest) -> JsonResponse:
         print('[ERROR] @ login: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
+
 @api_view(['POST'])
-@csrf_protect
 @permission_classes([BasePermission])
-def sign_up(request : HttpRequest) -> JsonResponse:
-    try:
-        if request.method == 'POST':
-            data = request.data
-            email = data.get('email')
-            data.update({'username': email})
-            # convert data.hobbies to list of only id [1, 2, 3]
-            data['hobbies'] = [h['id'] for h in data['hobbies']]
-            # check age is greater than 12
-            if (datetime.now().year - int(data['date_of_birth'].split("-")[0])) < 12:
-                return JsonResponse({'error': 'You must be at least 12 years old to sign up', 'success': 'false'}, status=400)
-            form = UserCreateForm(data)
-            if form.is_valid():
-                new_user = form.save()
-                new_user.hobbies.set(data['hobbies'])
-                return JsonResponse({'result': {'message': 'Successfully created an account!'}, 'success': 'true'}, status=201)
-            listFormErrors = ""
-            for key, value in form.errors.items():
-                for error in value:
-                    listFormErrors += f"{key}: {error}\n"
-            return JsonResponse({'error': listFormErrors, 'success': 'false'}, status=400)
-        else:
-            return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
-    except Exception as e:
-        print('[ERROR] @ sign_up: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
-        return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+def sign_up(request):
+    if request.method == 'POST':
+        data = request.data
+        print(data)
+
+        # Verify password consistency
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
+        if password != confirm_password:
+            return JsonResponse(
+                {'error': 'Passwords do not match.', 'success': False}, status=400
+            )
+
+        # Age verification
+        date_of_birth = data.get('date_of_birth')
+
+        # Example of query hobby
+        hobby_names = data.get('hobbies', [])
+        hobbies = []
+        for hobby_name in hobby_names:
+            hobby = Hobbies.objects.get(name=hobby_name)
+            hobbies.append(hobby)
+
+        # Create users
+        try:
+            user = User.objects.create_user(
+                username=data.get('username'),
+                first_name=data.get('first_name'),
+                last_name=data.get('last_name'),
+                email=data.get('email'),
+                date_of_birth=date_of_birth,
+                password=password,
+            )
+            user.save()
+            # Add a hobby
+            user.hobbies.set(hobbies)
+            return JsonResponse(
+                {'result': {'message': 'Successfully created an account!'}, 'success': True},
+                status=201
+            )
+        except Exception as e:
+            return JsonResponse(
+                {'error': f'An error occurred: {str(e)}', 'success': False},
+                status=500
+            )
+
+    return JsonResponse({'error': 'Method not allowed', 'success': False}, status=405)
+
 
 @api_view(['POST'])
 @csrf_protect
 @permission_classes([IsAuthenticated])
-def logout(request : HttpRequest) -> JsonResponse:
+def logout(request: HttpRequest) -> JsonResponse:
     try:
         if request.method == 'POST':
             headers = request.headers
@@ -536,7 +596,8 @@ def logout(request : HttpRequest) -> JsonResponse:
     except Exception as e:
         print('[ERROR] @ logout: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
-    
+
+
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -551,6 +612,7 @@ def login_view(request):
     else:
         form = LoginForm()
     return render(request, 'registration/login.html', {'form': form})
+
 
 def signup_view(request):
     if request.method == 'POST':

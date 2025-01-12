@@ -1,6 +1,6 @@
 // Example of how to use Vue Router
 
-import { createRouter, createWebHistory } from 'vue-router'
+import {createRouter, createWebHistory} from 'vue-router'
 
 // 1. Define route components.
 // These can be imported from other files
@@ -15,10 +15,12 @@ let base = (import.meta.env.MODE == 'development') ? import.meta.env.BASE_URL : 
 const router = createRouter({
     history: createWebHistory(base),
     routes: [
-        { path: '/', name: 'Main Page', component: MainPage },
-        { path: '/other/', name: 'Other Page', component: OtherPage },
-        { path: '/dashboard', name: 'Dashboard', component: () => import('../pages/Dashboard.vue') },
-        { path: '/search', name: 'Search', component: () => import('../pages/Search.vue') },
+        {path: '/', name: 'Main Page', component: MainPage},
+        {path: '/other/', name: 'Other Page', component: OtherPage},
+        {path: '/dashboard', name: 'Dashboard', component: () => import('../pages/Dashboard.vue')},
+        {path: '/search', name: 'Search', component: () => import('../pages/Search.vue')},
+        {path: '/login', name: 'Login', component: () => import('../pages/components/Login.vue')},
+        {path: '/signup', name: 'Signup', component: () => import('../pages/components/Signup.vue')}
     ]
 })
 
