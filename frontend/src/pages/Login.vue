@@ -75,7 +75,7 @@ export default defineComponent({
         const data = await response.json();
         if (data.success === "true") {
           const userStore = useUserStore();
-          userStore.login(data.result.user, data.result.access_token);
+          userStore.login(data.result.user);
           router.push('/dashboard');
           successMessage.value = "Login successful!";
         } else {

@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf import settings
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django.http import HttpResponse
 
 from . import views
@@ -28,9 +28,10 @@ urlpatterns = [
     path('api/hobbies/', views.get_hobbies, name='get_hobbies'),
     path('api/hobbies/add/', views.create_new_hobby, name='create_new_hobby'),
 
-    path('api/login/', views.login, name='login'),
+    path('login/', views.login, name='login'),
+    path('signup/', views.sign_up, name='signup'),
+
     path('api/logout/', views.logout, name='logout'),
-    path('api/register/', views.sign_up, name='register'),
 
     path('api/match_users_by_hobbies/', views.match_users_by_hobbies, name='match_users_by_hobbies'), # params: page
     path('api/user/<int:user_id>/', views.get_user_profile, name='get_user_profile'),
@@ -54,4 +55,6 @@ urlpatterns = [
     path('api/profile/change_password/', views.change_password, name='change_password'),
 
     #path('api/update_profile_image/', views.update_profile_image, name='update_profile_image'),
+
+    re_path(r'^.*$', views.catchall_not_found, name='catchall'),
 ]

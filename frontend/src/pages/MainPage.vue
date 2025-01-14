@@ -22,6 +22,7 @@
         },
         setup(){
             const userStore = useUserStore();
+            userStore.loadUser();
             return { userStore };
           }
     })

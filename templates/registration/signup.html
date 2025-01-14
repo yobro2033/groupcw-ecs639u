@@ -1,61 +1,77 @@
-{% extends "base.html" %}
-
-{% block title %}Sign Up{% endblock %}
-
-{% block content %}
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-        <title>Sign Up</title>
-    </head>
-    <body class="container d-flex justify-content-center align-items-center vh-100">
-        <div class="text-center">
-            <h2>Sign up</h2>
-            <form method="post" class="mt-3">
-                {% csrf_token %}
-                
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {{ form.non_field_errors }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css" rel="stylesheet">
+    <title>Sign Up</title>
+    <style>
+        .card {
+            max-width: 500px;
+            margin: auto;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header text-center">
+                <h2>Sign Up</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+                    <div class="form-group">
+                        {{ form.first_name.label_tag }}
+                        {{ form.first_name }}
                     </div>
-                {% endif %}
-                
-                <div class="form-group">
-                    {{ form.username.label_tag }}
-                    <input type="text" name="{{ form.username.name }}" class="form-control" id="{{ form.username.id_for_label }}" value="{{ form.username.value|default:'' }}">
-                    {% if form.username.errors %}
-                        <div class="alert alert-danger">
-                            {{ form.username.errors }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="form-group">
-                    {{ form.password1.label_tag }}
-                    <input type="password" name="{{ form.password1.name }}" class="form-control" id="{{ form.password1.id_for_label }}" value="">
-                    {% if form.password1.errors %}
-                        <div class="alert alert-danger">
-                            {{ form.password1.errors }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="form-group">
-                    {{ form.password2.label_tag }}
-                    <input type="password" name="{{ form.password2.name }}" class="form-control" id="{{ form.password2.id_for_label }}" value="">
-                    {% if form.password2.errors %}
-                        <div class="alert alert-danger">
-                            {{ form.password2.errors }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <button type="submit" class="btn btn-primary">Sign Up</button>
-            </form>
+                    <div class="form-group">
+                        {{ form.last_name.label_tag }}
+                        {{ form.last_name }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.email.label_tag }}
+                        {{ form.email }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.date_of_birth.label_tag }}
+                        {{ form.date_of_birth }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.password1.label_tag }}
+                        {{ form.password1 }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.password2.label_tag }}
+                        {{ form.password2 }}
+                    </div>
+                    <div class="form-group">
+                        <label for="hobbies">Hobbies</label>
+                        <select id="hobbies" name="hobbies" class="selectpicker form-control" multiple data-live-search="true">
+                            {% for hobby in form.fields.hobbies.queryset %}
+                                <option value="{{ hobby.id }}">{{ hobby.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <a href="/login/">Already have an account? Log In</a>
+            </div>
         </div>
-    </body>
-    </html>
-{% endblock %}
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.selectpicker').selectpicker();
+        });
+    </script>
+</body>
+</html>

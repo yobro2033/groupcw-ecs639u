@@ -170,7 +170,7 @@
 import { defineComponent, ref, onMounted } from "vue";
 import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.min.css";
-//import { useUserStore } from '../../stores/auth';
+import { useUserStore } from '../../stores/auth';
 
 interface Hobby {
   id: string;
@@ -198,10 +198,21 @@ function getCookieCsrfToken(): string | null {
   return null;
 }
 
+function getAuthToken(): string | null {
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.split('=');
+    if (name.trim() === "token_auth") {
+      return value;
+    }
+  }
+  return null;
+}
+
 export default defineComponent({
   components: { Multiselect },
   setup() {
-    //const userStore = useUserStore();
+    const userStore = useUserStore();
     const userProfile = ref<UserProfile | null>(null);
     const hobbiesList = ref<Hobby[]>([]);
     const editProfile = ref({
@@ -225,11 +236,13 @@ export default defineComponent({
 
     const loadProfile = async () => {
       try {
+        // try get token from userStore if not exist then attempt to get token from cookie with key token_auth
+        const authTokens = userStore.token ? userStore.token : getAuthToken();
         const response = await fetch(`/api/my_profile`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            //Authorization: "Token " + userStore.token,
+            Authorization: "Token " + authTokens,
           },
         });
         const data = await response.json();
@@ -283,11 +296,12 @@ export default defineComponent({
         const selectedHobbyIds = selectedHobbies.map((hobby) => hobby.id);
 
         const csrfToken = getCookieCsrfToken();
+        const authTokens = userStore.token ? userStore.token : getAuthToken();
         const response = await fetch(`/api/profile/update/`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            //Authorization: "Token " + userStore.token,
+            Authorization: "Token " + authTokens,
             "X-CSRFToken": csrfToken || "",
           },
           body: JSON.stringify({
@@ -321,11 +335,12 @@ export default defineComponent({
       successMessage.value = null;
       try {
         const csrfToken = getCookieCsrfToken();
+        const authTokens = userStore.token ? userStore.token : getAuthToken();
         const response = await fetch(`/api/hobbies/add/`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            //Authorization: "Token " + userStore.token,
+            Authorization: "Token " + authTokens,
             "X-CSRFToken": csrfToken || "",
           },
           body: JSON.stringify(newHobby.value),
@@ -376,11 +391,12 @@ export default defineComponent({
         }
 
         const csrfToken = getCookieCsrfToken();
+        const authTokens = userStore.token ? userStore.token : getAuthToken();
         const response = await fetch(`/api/profile/change_password/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            //Authorization: "Token " + userStore.token,
+            Authorization: "Token " + authTokens,
             "X-CSRFToken": csrfToken || "",
           },
           body: JSON.stringify(passwordForm.value),

@@ -211,6 +211,7 @@ export default defineComponent({
   },
   setup() {
     const userStore = useUserStore();
+    userStore.loadUser();
     return { userStore };
   },
   methods: {
@@ -237,9 +238,9 @@ export default defineComponent({
           : `/api/sent_requests/`;
       try {
         const response = await fetch(endpoint, {
-          headers: {
-            Authorization: "Token " + this.userStore.token,
-          },
+          //headers: {
+            //Authorization: "Token " + this.userStore.token,
+          //},
         });
         const data = await response.json();
         if (data.success === "true") {
@@ -261,9 +262,9 @@ export default defineComponent({
     async fetchFriends() {
       try {
         const response = await fetch(`/api/friends/`, {
-          headers: {
-            Authorization: "Token " + this.userStore.token,
-          },
+          //headers: {
+          //  Authorization: "Token " + this.userStore.token,
+          //},
         });
         const data = await response.json();
         if (data.success === "true") {
@@ -318,7 +319,7 @@ export default defineComponent({
           const response = await fetch(url, {
             method,
             headers: {
-              Authorization: "Token " + this.userStore.token,
+            //  Authorization: "Token " + this.userStore.token,
               "X-CSRFToken": csrfToken || "",
             },
           });
@@ -341,7 +342,7 @@ export default defineComponent({
           const response = await fetch(url, {
             method,
             headers: {
-              Authorization: "Token " + this.userStore.token,
+              //Authorization: "Token " + this.userStore.token,
               "X-CSRFToken": csrfToken || "",
             },
           });
@@ -373,7 +374,7 @@ export default defineComponent({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Token " + this.userStore.token,
+          //Authorization: "Token " + this.userStore.token,
           "X-CSRFToken": csrfToken || "",
         },
       };
@@ -388,7 +389,7 @@ export default defineComponent({
           this.successMessage = null;
         }, 5000);
         this.userStore.logout();
-        router.push({ path: "/" });
+        router.push("/");
       } else {
         this.errorMessage = "Error logging out";
         setTimeout(() => {

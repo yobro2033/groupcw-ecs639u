@@ -1,28 +1,36 @@
 from typing import Any
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import User, Hobbies
 
+class UserLoginForm(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password'].widget.attrs.update({'class': 'form-control'})
+
 class UserCreateForm(UserCreationForm):
+    hobbies = forms.ModelMultipleChoiceField(
+        queryset=Hobbies.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+
     class Meta:
         model = User
         fields = [
-            'username',
             'first_name',
             'last_name',
             'email',
             'date_of_birth',
-            'hobbies',
+            'password1',
+            'password2',
         ]
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter username'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter first name'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter last name'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter email'}),
-            'date_of_birth': forms.DateInput(
-                attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'Enter date of birth'}
-            ),
-            'hobbies': forms.CheckboxSelectMultiple(),
+            'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'Enter date of birth'}),
         }
 
     def save(self, commit: bool = True) -> User:
@@ -30,6 +38,11 @@ class UserCreateForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+    def cleaned_data(self) -> Any:
+        cleaned_data = super().cleaned_data()
+        cleaned_data['username'] = cleaned_data['email']
+        return cleaned_data
 
 class UserEditForm(forms.ModelForm):
     class Meta:

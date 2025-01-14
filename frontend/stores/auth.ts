@@ -9,14 +9,21 @@ export const useUserStore = defineStore('user', {
     token: null as Token | null,
   }),
   actions: {
-    login(username: string, token: Token) {
+    login(username: string) {
       // Use the correct casing for the type
       this.username = username;
-      this.token = token;
     },
     logout() {
       this.username = null;
-      this.token = null;
     },
+    async loadUser() {
+      const response = await fetch('/api/my_profile');
+      if (response.ok) {
+          const data = await response.json();
+          if (data.success === 'true') {
+              this.username = data.result.email || '';
+          }
+      }
+  }
   },
 });
