@@ -16,55 +16,16 @@ from .forms import UserCreateForm, UserEditForm, PasswordEditForm, HobbiesForm, 
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 
-@require_http_methods(["GET", "POST"])
-@csrf_protect
-def login(request: HttpRequest) -> HttpResponse:
-    if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                auth_login(request, user)
-                return redirect('home')
-        else:
-            return render(request, 'registration/login.html', {'form': form})
-    else:
-        form = AuthenticationForm()
-        return render(request, 'registration/login.html', {'form': form})
-
-@require_http_methods(["GET", "POST"])
-@csrf_protect
-def sign_up(request: HttpRequest) -> HttpResponse:
-    if request.method == 'POST':
-        data_form = request.POST
-        # add username to form
-        email = data_form['email']
-        data_form = data_form.copy()
-        data_form['username'] = email
-        print(data_form)
-        form = UserCreateForm(data_form)
-        if User.objects.filter(email=email).exists():
-            form.add_error('email', 'Email is already in use')
-            return render(request, 'registration/signup.html', {'form': form})
-        # Set username to email
-        
-        if (datetime.now().year - int(request.POST['date_of_birth'].split("-")[0])) < 12:
-            form.add_error(None, 'You must be at least 12 years old to sign up')
-            return render(request, 'registration/signup.html', {'form': form})
-        
-        if form.is_valid():
-            new_user = form.save()
-            hobbies = request.POST.getlist('hobbies')
-            new_user.hobbies.set(hobbies)
-            auth_login(request, new_user)
-            return redirect('home')
-        else:
-            return render(request, 'registration/signup.html', {'form': form})
-    else:
-        form = UserCreateForm()
-        return render(request, 'registration/signup.html', {'form': form})
+class Hobby:
+    def __init__(self, name: str, description: str):
+        self.name = name
+        self.description = description
+    
+    def to_dict(self) -> dict:
+        return {
+            'name': self.name,
+            'description': self.description
+        }
 
 def login_required_or_read_only(view_func):
     @wraps(view_func)
@@ -76,22 +37,69 @@ def login_required_or_read_only(view_func):
         return JsonResponse({'error': 'Authentication credentials were not provided.'}, status=401)
     return _wrapped_view
 
-def main_spa(request: HttpRequest) -> HttpResponse:
+def home(request: HttpRequest) -> HttpResponse:
     return render(request, 'api/spa/index.html', {})
 
-def catchall_not_found(request):
+def catchall_not_found(request : HttpRequest) -> HttpResponse:
     return render(request, 'api/spa/index_404.html', {})
 
-class Hobby:
-    def __init__(self, name: str, description: str):
-        self.name = name
-        self.description = description
-    
-    def to_dict(self) -> dict:
-        return {
-            'name': self.name,
-            'description': self.description
-        }
+@require_http_methods(["GET", "POST"])
+@csrf_protect
+def login(request: HttpRequest) -> HttpResponse:
+    try:
+        form = AuthenticationForm()
+        if request.method == 'POST':
+            form = AuthenticationForm(request, data=request.POST)
+            if form.is_valid():
+                username = form.cleaned_data.get('username')
+                password = form.cleaned_data.get('password')
+                user = authenticate(username=username, password=password)
+                if user is not None:
+                    auth_login(request, user)
+                    return redirect('home')
+            else:
+                return render(request, 'registration/login.html', {'form': form})
+        else:
+            return render(request, 'registration/login.html', {'form': form})
+    except Exception as e:
+        print('[ERROR] @ login: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        return render(request, 'registration/login.html', {'form': form})
+
+@require_http_methods(["GET", "POST"])
+@csrf_protect
+def sign_up(request: HttpRequest) -> HttpResponse:
+    try:
+        if request.method == 'POST':
+            data_form = request.POST
+            # add username to form
+            email = data_form['email']
+            data_form = data_form.copy()
+            data_form['username'] = email
+            print(data_form)
+            form = UserCreateForm(data_form)
+            if User.objects.filter(email=email).exists():
+                form.add_error('email', 'Email is already in use')
+                return render(request, 'registration/signup.html', {'form': form})
+            # Set username to email
+            
+            if (datetime.now().year - int(request.POST['date_of_birth'].split("-")[0])) < 12:
+                form.add_error(None, 'You must be at least 12 years old to sign up')
+                return render(request, 'registration/signup.html', {'form': form})
+            
+            if form.is_valid():
+                new_user = form.save()
+                hobbies = request.POST.getlist('hobbies')
+                new_user.hobbies.set(hobbies)
+                auth_login(request, new_user)
+                return redirect('home')
+            else:
+                return render(request, 'registration/signup.html', {'form': form})
+        else:
+            form = UserCreateForm()
+            return render(request, 'registration/signup.html', {'form': form})
+    except Exception as e:
+        print('[ERROR] @ sign_up: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        return render(request, 'registration/signup.html', {'form': form})
 
 def process_common_hobbies(request: HttpRequest, other_users: List[User], current_user_hobbies: set) -> JsonResponse:
     try:
@@ -156,9 +164,6 @@ def update_profile_image(request: HttpRequest) -> JsonResponse:
         print('[ERROR] @ update_profile_image: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
-def home(request: HttpRequest) -> HttpResponse:
-    return render(request, 'api/spa/index.html', {})
-
 @require_http_methods(["GET"])
 @login_required_or_read_only
 def get_hobbies(request: HttpRequest) -> JsonResponse:
@@ -191,80 +196,96 @@ def match_users_by_hobbies(request: HttpRequest) -> JsonResponse:
 @require_http_methods(["GET"])
 @login_required
 def get_user_profile(request: HttpRequest, user_id: int) -> JsonResponse:
-    if request.method == 'GET':
-        user = get_object_or_404(User, id=user_id)
-        user_data = {
-            'id': user.id,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'date_of_birth': user.date_of_birth,
-            'profile_image': user.profile_image.url,
-            'hobbies': list(user.hobbies.values('id', 'name'))
-        }
-        return JsonResponse({'result': user_data, 'success': 'true'}, status=200)
-    else:
-        return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
+    try:
+        if request.method == 'GET':
+            user = get_object_or_404(User, id=user_id)
+            user_data = {
+                'id': user.id,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'date_of_birth': user.date_of_birth,
+                'profile_image': user.profile_image.url,
+                'hobbies': list(user.hobbies.values('id', 'name'))
+            }
+            return JsonResponse({'result': user_data, 'success': 'true'}, status=200)
+        else:
+            return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
+    except Exception as e:
+        print('[ERROR] @ get_user_profile: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
 @require_http_methods(["GET"])
 @login_required
 def get_my_profile(request: HttpRequest) -> JsonResponse:
-    if request.method == 'GET':
-        user = request.user
-        user_data = {
-            'id': user.id,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'email': user.email,
-            'date_of_birth': user.date_of_birth,
-            'profile_image': user.profile_image.url,
-            'hobbies': list(user.hobbies.values('id', 'name'))
-        }
-        return JsonResponse({'result': user_data, 'success': 'true'}, status=200)
-    else:
-        return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
+    try:
+        if request.method == 'GET':
+            user = request.user
+            user_data = {
+                'id': user.id,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'date_of_birth': user.date_of_birth,
+                'profile_image': user.profile_image.url,
+                'hobbies': list(user.hobbies.values('id', 'name'))
+            }
+            return JsonResponse({'result': user_data, 'success': 'true'}, status=200)
+        else:
+            return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
+    except Exception as e:
+        print('[ERROR] @ get_my_profile: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
 @require_http_methods(["POST"])
 @csrf_protect
 @login_required
 def send_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
-    else:
-        current_user = request.user
-        friend = get_object_or_404(User, id=user_id)
+    try:
+        if request.method != 'POST':
+            return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
+        else:
+            current_user = request.user
+            friend = get_object_or_404(User, id=user_id)
 
-        if friend in current_user.friends.all():
-            return JsonResponse({'error': 'User is already your friend', 'success': 'false'}, status=400)
+            if friend in current_user.friends.all():
+                return JsonResponse({'error': 'User is already your friend', 'success': 'false'}, status=400)
 
-        if friend in current_user.sent_requests.all():
-            return JsonResponse({'error': 'Friend request already sent', 'success': 'false'}, status=400)
+            if friend in current_user.sent_requests.all():
+                return JsonResponse({'error': 'Friend request already sent', 'success': 'false'}, status=400)
 
-        if friend in current_user.pending_requests.all():
-            return JsonResponse({'error': 'Friend request already received', 'success': 'false'}, status=400)
-        
-        current_user.sent_requests.add(friend)
-        friend.pending_requests.add(current_user)
+            if friend in current_user.pending_requests.all():
+                return JsonResponse({'error': 'Friend request already received', 'success': 'false'}, status=400)
+            
+            current_user.sent_requests.add(friend)
+            friend.pending_requests.add(current_user)
 
-        return JsonResponse({'result': 'Friend request sent', 'success': 'true'}, status=200)
+            return JsonResponse({'result': 'Friend request sent', 'success': 'true'}, status=200)
+    except Exception as e:
+        print('[ERROR] @ send_friend_request: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
 @require_http_methods(["POST"])
 @csrf_protect
 @login_required
 def accept_friend_request(request: HttpRequest, user_id: int) -> JsonResponse:
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
-    else:
-        current_user = request.user
-        friend = get_object_or_404(User, id=user_id)
+    try:
+        if request.method != 'POST':
+            return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
+        else:
+            current_user = request.user
+            friend = get_object_or_404(User, id=user_id)
 
-        if friend not in current_user.pending_requests.all():
-            return JsonResponse({'error': 'No friend request from this user', 'success': 'false'}, status=400)
+            if friend not in current_user.pending_requests.all():
+                return JsonResponse({'error': 'No friend request from this user', 'success': 'false'}, status=400)
 
-        current_user.pending_requests.remove(friend)
-        current_user.friends.add(friend)
-        friend.friends.add(current_user)
+            current_user.pending_requests.remove(friend)
+            current_user.friends.add(friend)
+            friend.friends.add(current_user)
 
-        return JsonResponse({'result': 'Friend request accepted', 'success': 'true'}, status=200)
+            return JsonResponse({'result': 'Friend request accepted', 'success': 'true'}, status=200)
+    except Exception as e:
+        print('[ERROR] @ accept_friend_request: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
 @require_http_methods(["POST"])
 @csrf_protect
@@ -491,7 +512,6 @@ def create_new_hobby(request: HttpRequest) -> JsonResponse:
     except Exception as e:
         print('[ERROR] @ create_new_hobby: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
-
 
 @require_http_methods(["GET"])
 @login_required
