@@ -17,10 +17,15 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 from django.http import HttpResponse
+from django.contrib.auth import views as auth_views
+from api import views
 
 
 urlpatterns = [
     path('', include('api.urls')),
     path('health', lambda request: HttpResponse("OK")),
     path('admin/', admin.site.urls),
+    path('login/', views.login, name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('signup/', views.sign_up, name='signup'),
 ]

@@ -1,19 +1,17 @@
 <template>
   <div class="container mt-5">
-    <h1 class="text-center mb-4">User Dashboard</h1>
+    <h1>User Dashboard</h1>
 
     <!-- Profile Section -->
-    <div class="profile-section mb-4 p-4 shadow-sm rounded bg-white">
-      <h3 class="mb-3">Your Profile</h3>
+    <div class="profile-section mb-4">
+      <h3>Your Profile</h3>
       <div v-if="userProfile">
-        <div class="text-center mb-3">
-          <img
-            :src="userProfile.profile_image"
-            alt="Profile Picture"
-            class="profile-image mb-3"
-          />
-        </div>
-        <div class="form-group">
+        <img
+          :src="userProfile.profile_image"
+          alt="Profile Picture"
+          class="profile-image mb-3"
+        />
+        <div>
           <label>First Name:</label>
           <input
             type="text"
@@ -21,7 +19,7 @@
             class="form-control mb-2"
           />
         </div>
-        <div class="form-group">
+        <div>
           <label>Last Name:</label>
           <input
             type="text"
@@ -29,7 +27,7 @@
             class="form-control mb-2"
           />
         </div>
-        <div class="form-group">
+        <div>
           <label>Email:</label>
           <input
             type="email"
@@ -37,7 +35,7 @@
             class="form-control mb-2"
           />
         </div>
-        <div class="form-group">
+        <div>
           <label>Date of Birth:</label>
           <input
             type="date"
@@ -45,7 +43,7 @@
             class="form-control mb-2"
           />
         </div>
-        <div class="form-group">
+        <div>
           <label>Hobbies:</label>
           <Multiselect
             v-model="editProfile.selectedHobbies"
@@ -86,8 +84,8 @@
     </div>
 
     <!-- Change Password Section -->
-    <div class="change-password-section mb-4 p-4 shadow-sm rounded bg-white">
-      <h3 class="mb-3">Change Password</h3>
+    <div class="change-password-section">
+      <h3>Change Password</h3>
       <button class="btn btn-danger" @click="showPasswordModal = true">
         Change Password
       </button>
@@ -99,18 +97,14 @@
       class="modal"
       tabindex="-1"
       role="dialog"
-      @click.self="closeChangePasswordModal"
+      style="display: block"
     >
       <div class="modal-dialog" role="document">
-        <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Update Password</h5>
           </div>
           <div class="modal-body">
-            <div v-if="modalErrorMessage" class="alert alert-danger">
-              {{ modalErrorMessage }}
-            </div>
-            <div class="form-group">
+            <div>
               <label>Old Password:</label>
               <input
                 type="password"
@@ -118,7 +112,7 @@
                 class="form-control mb-2"
               />
             </div>
-            <div class="form-group">
+            <div>
               <label>New Password:</label>
               <input
                 type="password"
@@ -126,7 +120,7 @@
                 class="form-control mb-2"
               />
             </div>
-            <div class="form-group">
+            <div>
               <label>Confirm New Password:</label>
               <input
                 type="password"
@@ -134,6 +128,9 @@
                 class="form-control mb-2"
               />
             </div>
+          </div>
+          <div v-if="modalErrorMessage" class="alert alert-danger">
+            {{ modalErrorMessage }}
           </div>
           <div class="modal-footer">
             <button
@@ -152,7 +149,6 @@
             </button>
           </div>
         </div>
-      </div>
     </div>
 
     <br>
@@ -170,7 +166,7 @@
 import { defineComponent, ref, onMounted } from "vue";
 import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.min.css";
-//import { useUserStore } from '../../stores/auth';
+import { useUserStore } from '../../stores/auth';
 
 interface Hobby {
   id: string;
@@ -201,7 +197,7 @@ function getCookieCsrfToken(): string | null {
 export default defineComponent({
   components: { Multiselect },
   setup() {
-    //const userStore = useUserStore();
+    const userStore = useUserStore();
     const userProfile = ref<UserProfile | null>(null);
     const hobbiesList = ref<Hobby[]>([]);
     const editProfile = ref({
@@ -229,7 +225,7 @@ export default defineComponent({
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            //Authorization: "Token " + userStore.token,
+            Authorization: "Token " + userStore.token,
           },
         });
         const data = await response.json();
@@ -287,7 +283,7 @@ export default defineComponent({
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            //Authorization: "Token " + userStore.token,
+            Authorization: "Token " + userStore.token,
             "X-CSRFToken": csrfToken || "",
           },
           body: JSON.stringify({
@@ -325,7 +321,7 @@ export default defineComponent({
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            //Authorization: "Token " + userStore.token,
+            Authorization: "Token " + userStore.token,
             "X-CSRFToken": csrfToken || "",
           },
           body: JSON.stringify(newHobby.value),
@@ -352,7 +348,6 @@ export default defineComponent({
 
     const closeChangePasswordModal = () => {
       showPasswordModal.value = false;
-      modalErrorMessage.value = null;
     };
 
     const changePassword = async () => {
@@ -361,17 +356,11 @@ export default defineComponent({
       try {
         if (passwordForm.value.new_password !== passwordForm.value.new_password_confirm) {
           modalErrorMessage.value = "New passwords do not match.";
-          setTimeout(() => {
-            modalErrorMessage.value = null;
-          }, 5000);
           return;
         }
 
         if (passwordForm.value.new_password.length < 8) {
           modalErrorMessage.value = "New password must be at least 8 characters long.";
-          setTimeout(() => {
-            modalErrorMessage.value = null;
-          }, 5000);
           return;
         }
 
@@ -380,7 +369,7 @@ export default defineComponent({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            //Authorization: "Token " + userStore.token,
+            Authorization: "Token " + userStore.token,
             "X-CSRFToken": csrfToken || "",
           },
           body: JSON.stringify(passwordForm.value),
@@ -396,16 +385,10 @@ export default defineComponent({
           closeChangePasswordModal();
         } else {
           modalErrorMessage.value = data.error;
-          setTimeout(() => {
-            modalErrorMessage.value = null;
-          }, 5000);
         }
       } catch (error) {
         console.error("Error changing password:", error);
         modalErrorMessage.value = "An error occurred while changing password.";
-        setTimeout(() => {
-          modalErrorMessage.value = null;
-        }, 5000);
       }
     };
 
@@ -438,7 +421,7 @@ export default defineComponent({
 
 <style scoped>
 .container {
-  max-width: 800px;
+  max-width: 600px;
   margin: auto;
 }
 .profile-image {
@@ -464,17 +447,10 @@ export default defineComponent({
   align-items: center;
 }
 .modal-dialog {
+  margin: 10% auto;
   background: white;
   padding: 20px;
   border-radius: 8px;
   width: 400px;
-}
-.modal-content {
-  width: 100%;
-}
-.profile-section, .change-password-section {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
 }
 </style>

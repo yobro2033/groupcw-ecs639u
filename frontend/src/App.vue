@@ -27,11 +27,11 @@
       NavBar,
       NavBar2,
     },
-    setup() {
-      const userStore = useUserStore();
-      userStore.loadUser();
-      return { userStore };
-    },
+    setup(){
+            const userStore = useUserStore();
+            return { userStore };
+          }
+  
     
   });
   </script>

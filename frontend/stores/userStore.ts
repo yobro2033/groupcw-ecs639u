@@ -16,16 +16,6 @@ export const useUserStore = defineStore('user', {
             this.username = null;
             this.token = null;
             this.isLoggedIn = false;
-        },
-        async loadUser() {
-            const response = await fetch('/api/my_profile');
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success === 'true') {
-                    this.username = data.result.email || '';
-                    this.isLoggedIn = true;
-                }
-            }
         }
     }
 });

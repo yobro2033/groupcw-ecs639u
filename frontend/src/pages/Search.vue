@@ -1,104 +1,131 @@
 <template>
   <div class="container mt-5">
-    <h1 class="text-center mb-4">Search Page</h1>
-
-    <!-- Search Section -->
-    <div class="search-section mb-4 p-4 shadow-sm rounded bg-white">
-      <div class="search-bar mb-3">
+    <h1>Search Page</h1>
+    <div class="search-bar">
+      <input
+        type="text"
+        v-model="searchTerm"
+        @input="searchUsers"
+        placeholder="Search for a user"
+        class="form-control mb-3"
+      />
+      <div class="age-slider">
+        <label>Age Range: {{ l_age }} - {{ u_age }}</label>
         <input
-          type="text"
-          v-model="searchTerm"
+          type="range"
+          v-model="l_age"
+          :min="minAge"
+          :max="u_age"
           @input="searchUsers"
-          placeholder="Search for a user"
-          class="form-control mb-3"
         />
-        <div class="age-slider">
-          <label>Age Range: {{ l_age }} - {{ u_age }}</label>
-          <input
-            type="range"
-            v-model="l_age"
-            :min="minAge"
-            :max="u_age"
-            @input="debouncedSearchUsers"
-            class="form-range"
-          />
-          <input
-            type="range"
-            v-model="u_age"
-            :min="l_age"
-            :max="maxAge"
-            @input="debouncedSearchUsers"
-            class="form-range"
-          />
+        <input
+          type="range"
+          v-model="u_age"
+          :min="l_age"
+          :max="maxAge"
+          @input="searchUsers"
+        />
+      </div>
+    </div>
+    <div v-if="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+    <div v-if="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
+    <ul class="user-list">
+      <li v-for="user in users" :key="user.id" class="user-item">
+        <div class="user-info">
+          <router-link :to="'/profile/' + user.id" class="profile-link">
+            <img :src="user.profile_image" alt="Profile" class="profile-image" />
+            <span>{{ user.first_name }} {{ user.last_name }}</span>
+          </router-link>
+          <p>Common hobbies: {{ user.common_hobby_count }}</p>
         </div>
-      </div>
-      <div v-if="errorMessage" class="alert alert-danger">
-        {{ errorMessage }}
-      </div>
-      <div v-if="successMessage" class="alert alert-success">
-        {{ successMessage }}
-      </div>
-      <ul class="user-list list-group">
-        <li v-for="user in users" :key="user.id" class="list-group-item d-flex justify-content-between align-items-center">
-          <div class="user-info">
-            <router-link :to="'/profile/' + user.id" class="profile-link">
-              <img :src="user.profile_image" alt="Profile" class="profile-image" />
-              <span>{{ user.first_name }} {{ user.last_name }}</span>
-            </router-link>
-            <p>Common hobbies: {{ user.common_hobby_count }}</p>
-          </div>
-          <div>
-            <button
-              v-if="user.isFriend"
-              class="btn btn-danger"
-              @click="removeFriend(user.id)"
-            >
-              Remove Friend
-            </button>
-            <button
-              v-else-if="user.hasSentRequest"
-              class="btn btn-warning"
-              @click="cancelFriendRequest(user.id)"
-            >
-              Cancel Request
-            </button>
-            <button
-              v-else-if="user.hasPendingRequest"
-              class="btn btn-success"
-              @click="acceptFriendRequest(user.id)"
-            >
-              Accept
-            </button>
-            <button
-              v-else
-              class="btn btn-primary"
-              @click="sendFriendRequest(user.id)"
-            >
-              Add Friend
-            </button>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <!-- Pagination Section -->
-    <div class="pagination-section mt-4 p-4 shadow-sm rounded bg-white d-flex justify-content-between align-items-center">
-      <div>
-        <button @click="prevPage" :disabled="currentPage === 1" class="btn btn-primary">
-          Previous
-        </button>
-        <button @click="nextPage" :disabled="currentPage === totalPages" class="btn btn-primary">
-          Next
-        </button>
-      </div>
-      <span>Page {{ currentPage }} of {{ totalPages }}</span>
-    </div>
+        <div>
+          <button
+            v-if="user.isFriend"
+            class="btn btn-danger"
+            @click="removeFriend(user.id)"
+          >
+            Remove Friend
+          </button>
+          <button
+            v-else-if="user.hasSentRequest"
+            class="btn btn-warning"
+            @click="cancelFriendRequest(user.id)"
+          >
+            Cancel Request
+          </button>
+          <button
+            v-else-if="user.hasPendingRequest"
+            class="btn btn-success"
+            @click="acceptFriendRequest(user.id)"
+          >
+            Accept
+          </button>
+          <button
+            v-else
+            class="btn btn-primary"
+            @click="sendFriendRequest(user.id)"
+          >
+            Add Friend
+          </button>
+        </div>
+      </li>
+    </ul>
   </div>
 </template>
 
+  
+<style scoped>
+.container {
+  max-width: 600px;
+  margin: auto;
+}
+.search-bar {
+  margin-bottom: 20px;
+}
+.age-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.age-slider input[type="range"] {
+  width: 100%;
+}
+.user-list {
+  list-style: none;
+  padding: 0;
+}
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+  padding: 10px 0;
+}
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.profile-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.profile-link {
+    text-decoration: none;
+    font-weight: bold;
+}
+</style>
+  
 <script lang="ts">
 import { defineComponent, ref, watch } from "vue";
-//import { useUserStore } from "../../stores/auth";
+import { useUserStore } from "../../stores/auth";
 
 interface User {
   id: string;
@@ -123,17 +150,9 @@ function getCookieCsrfToken(): string | null {
   return null;
 }
 
-function debounce(func: Function, wait: number) {
-  let timeout: number | undefined;
-  return (...args: any[]) => {
-    clearTimeout(timeout);
-    timeout = window.setTimeout(() => func.apply(null, args), wait);
-  };
-}
-
 export default defineComponent({
   setup() {
-    //const userStore = useUserStore();
+    const userStore = useUserStore();
     const searchTerm = ref<string>("");
     const l_age = ref<number>(12);
     const u_age = ref<number>(60);
@@ -142,8 +161,6 @@ export default defineComponent({
     const maxAge = 100;
     const errorMessage = ref<string | null>(null);
     const successMessage = ref<string | null>(null);
-    const currentPage = ref<number>(1);
-    const totalPages = ref<number>(1);
 
     const searchUsers = async () => {
       errorMessage.value = null;
@@ -151,20 +168,18 @@ export default defineComponent({
       if (searchTerm.value !== "" || searchTerm.value === "") {
         try {
           const response = await fetch(
-            `/api/users/?search=${searchTerm.value}&l_age=${l_age.value}&u_age=${u_age.value}&page=${currentPage.value}`,
+            `/api/users/?search=${searchTerm.value}&l_age=${l_age.value}&u_age=${u_age.value}`,
             {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
-                //Authorization: "Token " + userStore.token,
+                Authorization: "Token " + userStore.token,
               },
             }
           );
           const data = await response.json();
           if (data.success === "true") {
             users.value = data.result.users || [];
-            currentPage.value = data.result.current_page;
-            totalPages.value = data.result.total_pages;
           } else {
             errorMessage.value = data.error;
           }
@@ -174,8 +189,6 @@ export default defineComponent({
         }
       }
     };
-
-    const debouncedSearchUsers = debounce(searchUsers, 100);
 
     const sendFriendRequest = async (userId: string) => {
       errorMessage.value = null;
@@ -188,7 +201,7 @@ export default defineComponent({
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              //Authorization: "Token " + userStore.token,
+              Authorization: "Token " + userStore.token,
               "X-CSRFToken": csrfToken || "",
             },
           }
@@ -210,15 +223,13 @@ export default defineComponent({
       errorMessage.value = null;
       successMessage.value = null;
       try {
-        const csrfToken = getCookieCsrfToken();
         const response = await fetch(
           `/api/sent_request/remove/${userId}/`,
           {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
-              //Authorization: "Token " + userStore.token,
-              "X-CSRFToken": csrfToken || "",
+              Authorization: "Token " + userStore.token,
             },
           }
         );
@@ -246,7 +257,7 @@ export default defineComponent({
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              //Authorization: "Token " + userStore.token,
+              Authorization: "Token " + userStore.token,
               "X-CSRFToken": csrfToken || "",
             },
           }
@@ -268,15 +279,13 @@ export default defineComponent({
       errorMessage.value = null;
       successMessage.value = null;
       try {
-        const csrfToken = getCookieCsrfToken();
         const response = await fetch(
           `/api/friend/remove/${userId}/`,
           {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
-              //Authorization: "Token " + userStore.token,
-              "X-CSRFToken": csrfToken || "",
+              Authorization: "Token " + userStore.token,
             },
           }
         );
@@ -293,22 +302,8 @@ export default defineComponent({
       }
     };
 
-    const nextPage = () => {
-      if (currentPage.value < totalPages.value) {
-        currentPage.value++;
-        searchUsers();
-      }
-    };
-
-    const prevPage = () => {
-      if (currentPage.value > 1) {
-        currentPage.value--;
-        searchUsers();
-      }
-    };
-
-    // Watch for changes in searchTerm, l_age, u_age, or currentPage and trigger search
-    watch([searchTerm, currentPage], searchUsers, { immediate: true });
+    // Watch for changes in searchTerm, l_age, or u_age and trigger search
+    watch([searchTerm, l_age, u_age], searchUsers, { immediate: true });
 
     return {
       searchTerm,
@@ -319,49 +314,12 @@ export default defineComponent({
       maxAge,
       errorMessage,
       successMessage,
-      currentPage,
-      totalPages,
       searchUsers,
-      debouncedSearchUsers,
       sendFriendRequest,
       cancelFriendRequest,
       acceptFriendRequest,
       removeFriend,
-      nextPage,
-      prevPage,
     };
   },
 });
 </script>
-
-<style scoped>
-.container {
-  max-width: 800px;
-  margin: auto;
-}
-.profile-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 10px;
-}
-.alert {
-  margin-bottom: 20px;
-  margin-left: 5px;
-  margin-right: 5px;
-}
-.search-section, .pagination-section {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-}
-.pagination-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.pagination-section .btn {
-  margin: 0 10px;
-}
-</style>
