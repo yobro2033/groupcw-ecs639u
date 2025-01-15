@@ -18,13 +18,24 @@ from django.contrib import admin
 from django.urls import include, path
 from django.http import HttpResponse
 from django.contrib.auth import views as auth_views
+from django.shortcuts import render
+from api.views import login_view, register_view
 
+
+def custom_login_view(request):
+    return render(request, 'registration/login.html')
+
+def custom_signup_view(request):
+    return render(request, 'registration/signup.html')
 
 urlpatterns = [
     path('', include('api.urls')),
     path('health', lambda request: HttpResponse("OK")),
     path('admin/', admin.site.urls),
-    path('login/', auth_views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('signup/', include('api.urls')),
+    path('Login/', login_view, name='login'),
+    path('Signup/', register_view, name='signup'),
+    
+   # path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    #path('signup/', auth_views.TemplateView.as_view(template_name='registration/signup.html'), name='signup'),
 ]

@@ -17,10 +17,9 @@ const router = createRouter({
     routes: [
         { path: '/', name: 'Main Page', component: MainPage },
         { path: '/other/', name: 'Other Page', component: OtherPage },
-        { path: '/login', name: 'Login', component: () => import('../pages/Login.vue') },
-        { path: '/signup', name: 'Register', component: () => import('../pages/Signup.vue') },
+        //{ path: '/login', name: 'Login', component: () => window.location.href = '/login/' },
+        //{ path: '/signup', name: 'Register', component: () => window.location.href = '/signup/' },
         { path: '/dashboard', name: 'Dashboard', component: () => import('../pages/Dashboard.vue') },
-        //{ path: '/search', name: 'Search', component: () => import('../pages/Search.vue') },
         { path: '/search', name: 'Search', component: () => import('../pages/Search.vue') },
     ]
 })

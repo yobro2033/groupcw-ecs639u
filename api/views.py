@@ -1,7 +1,7 @@
 import json
 import sys
 from typing import List, Dict, Any, Union
-from django.http import HttpResponse, HttpRequest, JsonResponse
+from django.http import HttpResponse, HttpRequest, JsonResponse, HttpResponseRedirect
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, BasePermission
@@ -12,6 +12,11 @@ from django.utils.timezone import datetime
 from .forms import UserCreateForm, UserEditForm, PasswordEditForm, HobbiesForm
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_protect
+
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
+
+
 
 def main_spa(request: HttpRequest) -> HttpResponse:
     return render(request, 'api/spa/index.html', {})
@@ -469,58 +474,56 @@ def search_users(request: HttpRequest) -> JsonResponse:
         print('[ERROR] @ search_users: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
 
-@api_view(['POST'])
 @csrf_protect
 @permission_classes([BasePermission])
-def login(request : HttpRequest) -> JsonResponse:
-    try:
-        if request.method == 'POST':
-            data = request.data
-            username = data.get('username')
-            password = data.get('password')
-            try:
-                user = User.objects.get(username=username)
-            except User.DoesNotExist:
-                return JsonResponse({'error': 'Invalid credentials', 'success': 'false'}, status=400) # Prevent user enumeration
-            if user.check_password(password):
-                token, created = Token.objects.get_or_create(user=user)
-                return JsonResponse({'result': {'message': 'Successfully logged in!', 'access_token': token.key, 'user': username}, 'success': 'true'}, status=200)
-            return JsonResponse({'error': 'Invalid credentials', 'success': 'false'}, status=400)
+def login_view(request: HttpRequest) -> HttpResponse:
+    if request.method == 'GET':
+        return render(request, 'registration/login.html')
+    elif request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user:
+            login(request, user)
+            return HttpResponseRedirect('/dashboard/')
         else:
-            return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
-    except Exception as e:
-        print('[ERROR] @ login: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
-        return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+            return render(request, 'registration/login.html', {'error': 'Invalid credentials'})
 
-@api_view(['POST'])
 @csrf_protect
 @permission_classes([BasePermission])
-def sign_up(request : HttpRequest) -> JsonResponse:
-    try:
-        if request.method == 'POST':
-            data = request.data
-            email = data.get('email')
-            data.update({'username': email})
-            # convert data.hobbies to list of only id [1, 2, 3]
-            data['hobbies'] = [h['id'] for h in data['hobbies']]
-            # check age is greater than 12
-            if (datetime.now().year - int(data['date_of_birth'].split("-")[0])) < 12:
-                return JsonResponse({'error': 'You must be at least 12 years old to sign up', 'success': 'false'}, status=400)
-            form = UserCreateForm(data)
-            if form.is_valid():
-                new_user = form.save()
-                new_user.hobbies.set(data['hobbies'])
-                return JsonResponse({'result': {'message': 'Successfully created an account!'}, 'success': 'true'}, status=201)
-            listFormErrors = ""
-            for key, value in form.errors.items():
-                for error in value:
-                    listFormErrors += f"{key}: {error}\n"
-            return JsonResponse({'error': listFormErrors, 'success': 'false'}, status=400)
-        else:
-            return JsonResponse({'error': 'Method not allowed', 'success': 'false'}, status=405)
-    except Exception as e:
-        print('[ERROR] @ sign_up: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
-        return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+def sign_up(request: HttpRequest) -> HttpResponse:
+    if request.method == 'GET':
+        return render(request, 'registration/signup.html')
+    elif request.method == 'POST':
+        try:
+            email = request.POST.get('email')
+            username = email
+            password = request.POST.get('password')
+            date_of_birth = request.POST.get('date_of_birth')
+            hobbies = request.POST.getlist('hobbies')
+
+            if (datetime.now().year - int(date_of_birth.split("-")[0])) < 12:
+                return render(request, 'registration/signup.html', {
+                    'error': 'You must be at least 12 years old to sign up',
+                    'form_data': request.POST
+                })
+
+            if User.objects.filter(username=username).exists():
+                return render(request, 'registration/signup.html', {
+                    'error': 'Username already exists',
+                    'form_data': request.POST
+                })
+
+            user = User.objects.create_user(username=username, password=password, email=email)
+            user.save()
+            user.hobbies.set(hobbies)
+            return HttpResponseRedirect('/Login/')
+        except Exception as e:
+            print(f'[ERROR] @ sign_up: {e}')
+            return render(request, 'registration/signup.html', {
+                'error': 'An unexpected error occurred. Please try again later.',
+                'form_data': request.POST
+            })
 
 @api_view(['POST'])
 @csrf_protect

@@ -12,6 +12,18 @@ export default defineConfig(({ mode }) => ({
         emptyOutDir: true,
         outDir: "../api/static/api/spa",
     },
+    server: {
+        proxy: {
+            '/Login': {
+                target: 'http://127.0.0.1:8000', 
+                changeOrigin: true,
+            },
+            '/Signup': {
+                target: 'http://127.0.0.1:8000', 
+                changeOrigin: true,
+            },
+        },
+    },
     plugins: [vue()],
     resolve: {
         alias: {
