@@ -43,64 +43,6 @@ def home(request: HttpRequest) -> HttpResponse:
 def catchall_not_found(request : HttpRequest) -> HttpResponse:
     return render(request, 'api/spa/index_404.html', {})
 
-@require_http_methods(["GET", "POST"])
-@csrf_protect
-def login(request: HttpRequest) -> HttpResponse:
-    try:
-        form = AuthenticationForm()
-        if request.method == 'POST':
-            form = AuthenticationForm(request, data=request.POST)
-            if form.is_valid():
-                username = form.cleaned_data.get('username')
-                password = form.cleaned_data.get('password')
-                user = authenticate(username=username, password=password)
-                if user is not None:
-                    auth_login(request, user)
-                    return redirect('home')
-            else:
-                return render(request, 'registration/login.html', {'form': form})
-        else:
-            return render(request, 'registration/login.html', {'form': form})
-    except Exception as e:
-        print('[ERROR] @ login: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
-        return render(request, 'registration/login.html', {'form': form})
-
-@require_http_methods(["GET", "POST"])
-@csrf_protect
-def sign_up(request: HttpRequest) -> HttpResponse:
-    try:
-        if request.method == 'POST':
-            data_form = request.POST
-            # add username to form
-            email = data_form['email']
-            data_form = data_form.copy()
-            data_form['username'] = email
-            print(data_form)
-            form = UserCreateForm(data_form)
-            if User.objects.filter(email=email).exists():
-                form.add_error('email', 'Email is already in use')
-                return render(request, 'registration/signup.html', {'form': form})
-            # Set username to email
-            
-            if (datetime.now().year - int(request.POST['date_of_birth'].split("-")[0])) < 12:
-                form.add_error(None, 'You must be at least 12 years old to sign up')
-                return render(request, 'registration/signup.html', {'form': form})
-            
-            if form.is_valid():
-                new_user = form.save()
-                hobbies = request.POST.getlist('hobbies')
-                new_user.hobbies.set(hobbies)
-                auth_login(request, new_user)
-                return redirect('home')
-            else:
-                return render(request, 'registration/signup.html', {'form': form})
-        else:
-            form = UserCreateForm()
-            return render(request, 'registration/signup.html', {'form': form})
-    except Exception as e:
-        print('[ERROR] @ sign_up: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
-        return render(request, 'registration/signup.html', {'form': form})
-
 def process_common_hobbies(request: HttpRequest, other_users: List[User], current_user_hobbies: set) -> JsonResponse:
     try:
         user_matches = []
@@ -163,6 +105,63 @@ def update_profile_image(request: HttpRequest) -> JsonResponse:
     except Exception as e:
         print('[ERROR] @ update_profile_image: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return JsonResponse({'error': 'An error occurred', 'success': 'false'}, status=500)
+
+@require_http_methods(["GET", "POST"])
+@csrf_protect
+def login(request: HttpRequest) -> HttpResponse:
+    try:
+        form = AuthenticationForm()
+        if request.method == 'POST':
+            form = AuthenticationForm(request, data=request.POST)
+            if form.is_valid():
+                username = form.cleaned_data.get('username')
+                password = form.cleaned_data.get('password')
+                user = authenticate(username=username, password=password)
+                if user is not None:
+                    auth_login(request, user)
+                    return redirect('home')
+            else:
+                return render(request, 'registration/login.html', {'form': form})
+        else:
+            return render(request, 'registration/login.html', {'form': form})
+    except Exception as e:
+        print('[ERROR] @ login: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        return render(request, 'registration/login.html', {'form': form})
+
+@require_http_methods(["GET", "POST"])
+@csrf_protect
+def sign_up(request: HttpRequest) -> HttpResponse:
+    try:
+        if request.method == 'POST':
+            data_form = request.POST
+            # add username to form
+            email = data_form['email']
+            data_form = data_form.copy()
+            data_form['username'] = email
+            print(data_form)
+            form = UserCreateForm(data_form)
+            if User.objects.filter(email=email).exists():
+                form.add_error('email', 'Email is already in use')
+                return render(request, 'registration/signup.html', {'form': form})
+            
+            if (datetime.now().year - int(request.POST['date_of_birth'].split("-")[0])) < 12:
+                form.add_error('date_of_birth', 'You must be at least 12 years old to sign up')
+                return render(request, 'registration/signup.html', {'form': form})
+            
+            if form.is_valid():
+                new_user = form.save()
+                hobbies = request.POST.getlist('hobbies')
+                new_user.hobbies.set(hobbies)
+                auth_login(request, new_user)
+                return redirect('home')
+            else:
+                return render(request, 'registration/signup.html', {'form': form})
+        else:
+            form = UserCreateForm()
+            return render(request, 'registration/signup.html', {'form': form})
+    except Exception as e:
+        print('[ERROR] @ sign_up: {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        return render(request, 'registration/signup.html', {'form': form})
 
 @require_http_methods(["GET"])
 @login_required_or_read_only
