@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf import settings
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django.http import HttpResponse
 
 from . import views
@@ -54,4 +54,7 @@ urlpatterns = [
     path('api/profile/change_password/', views.change_password, name='change_password'),
 
     #path('api/update_profile_image/', views.update_profile_image, name='update_profile_image'),
+    path('login/', views.login_view, name='login_view'),
+    path('signup/', views.register_view, name='register_view'),
+    re_path(r'^(?!api/).*$', views.spa_view, name='spa'),
 ]

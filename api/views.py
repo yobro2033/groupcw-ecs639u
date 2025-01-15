@@ -96,17 +96,23 @@ def update_profile_image(request: HttpRequest) -> JsonResponse:
 def home(request: HttpRequest) -> HttpResponse:
     return render(request, 'api/spa/index.html', {})
 
-@api_view(['GET'])
+def spa_view(request, path=''):
+    return render(request, 'api/spa/index.html', {})
+
 def login_view(request: HttpRequest) -> HttpResponse:
-    return render(request, 'templates/registration/login.html', {})
+    if request.method == 'GET':
+        return render(request, 'registration/login.html', {'form': AuthenticationForm()})
+    return redirect('/')
+    
+
+def register_view(request: HttpRequest) -> HttpResponse:
+    if request.method == 'GET':
+        return render(request, 'registration/signup.html', {'form': UserCreateForm()})
+    return redirect('/')
 
 @api_view(['GET'])
 def logout_view(request: HttpRequest) -> HttpResponse:
     return render(request, 'templates/registration/login.html', {})
-
-@api_view(['GET'])
-def register_view(request: HttpRequest) -> HttpResponse:
-    return render(request, 'templates/registration/signup.html', {})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticatedOrReadOnly])
