@@ -12,6 +12,20 @@
             margin: auto;
             margin-top: 50px;
         }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-control {
+            border-radius: 0.25rem;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
     </style>
 </head>
 <body>
@@ -26,7 +40,7 @@
                     {{ form.non_field_errors }}
                     <div class="form-group">
                         {{ form.first_name.label_tag }}
-                        {{ form.first_name }}
+                        {{ form.first_name|add_class:"form-control" }}
                         {% if form.first_name.errors %}
                             <div class="text-danger">
                                 {{ form.first_name.errors }}
@@ -35,7 +49,7 @@
                     </div>
                     <div class="form-group">
                         {{ form.last_name.label_tag }}
-                        {{ form.last_name }}
+                        {{ form.last_name|add_class:"form-control" }}
                         {% if form.last_name.errors %}
                             <div class="text-danger">
                                 {{ form.last_name.errors }}
@@ -44,7 +58,7 @@
                     </div>
                     <div class="form-group">
                         {{ form.email.label_tag }}
-                        {{ form.email }}
+                        {{ form.email|add_class:"form-control" }}
                         {% if form.email.errors %}
                             <div class="text-danger">
                                 {{ form.email.errors }}
@@ -53,7 +67,7 @@
                     </div>
                     <div class="form-group">
                         {{ form.date_of_birth.label_tag }}
-                        {{ form.date_of_birth }}
+                        {{ form.date_of_birth|add_class:"form-control" }}
                         {% if form.date_of_birth.errors %}
                             <div class="text-danger">
                                 {{ form.date_of_birth.errors }}
@@ -70,7 +84,7 @@
                     </div>
                     <div class="form-group">
                         {{ form.password1.label_tag }}
-                        {{ form.password1 }}
+                        {{ form.password1|add_class:"form-control" }}
                         {% if form.password1.errors %}
                             <div class="text-danger">
                                 {{ form.password1.errors }}
@@ -79,7 +93,7 @@
                     </div>
                     <div class="form-group">
                         {{ form.password2.label_tag }}
-                        {{ form.password2 }}
+                        {{ form.password2|add_class:"form-control" }}
                         {% if form.password2.errors %}
                             <div class="text-danger">
                                 {{ form.password2.errors }}
@@ -90,7 +104,7 @@
                 </form>
             </div>
             <div class="card-footer text-center">
-                <a href="/login/">Already have an account? Log In</a>
+                <a href="/login/" class="btn btn-secondary">Already have an account? Log In</a>
             </div>
         </div>
     </div>
