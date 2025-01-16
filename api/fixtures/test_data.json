@@ -1,0 +1,24 @@
+[
+    {
+        "model": "api.User",
+        "fields": {
+            "username": "Sarahjones@test.com",
+            "first_name": "Sarah",
+            "last_name": "Jones",
+            "email": "Sarahjones@test.com",
+            "date_of_birth": "1980-05-22",
+            "password": "pbkdf2_sha256$870000$fukHkm0Rughl7ZzYSAo5CL$GaYQm/fvZvnieU4xsIK5wcCCLSXL8iE+oQGkyCUkB20="
+        }
+    },
+    {
+        "model": "api.User",
+        "fields": {
+            "username": "Tomstar@testmail.com",
+            "first_name": "Tom",
+            "last_name": "Star",
+            "email": "Tomstar@testmail.com",
+            "date_of_birth": "2000-01-14",
+            "password": "pbkdf2_sha256$870000$aORVeiGkYtSg9mL8hSSMto$zpHu9T8Rcr3oAAGVI9icU4ZCbyuZ9TsfT0j8VI8Rc2k="
+        }
+    }
+]
