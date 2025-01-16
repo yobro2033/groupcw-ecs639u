@@ -93,7 +93,7 @@ def update_profile_image(request: HttpRequest) -> JsonResponse:
             number_updated = 0
             for user in users:
                 try:
-                    user.profile_image = 'static/api/spa/assets/default.jpg'
+                    user.profile_image = 'static/images/default.jpg'
                     user.save()
                     number_updated += 1
                 except Exception as e:

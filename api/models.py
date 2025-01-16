@@ -20,7 +20,7 @@ class Hobbies(models.Model):
 
 class User(AbstractUser):
     id: int = models.AutoField(primary_key=True)
-    profile_image: Any = models.ImageField(upload_to='static/api/spa/assets/', default='static/api/spa/assets/default.jpg', blank=True)
+    profile_image: Any = models.ImageField(upload_to='profile_images/', default='static/images/default.jpg', blank=True)
     first_name: str = models.CharField(max_length=254)
     last_name: str = models.CharField(max_length=254)
     email: str = models.EmailField(max_length=254)
