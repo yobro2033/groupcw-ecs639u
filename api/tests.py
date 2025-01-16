@@ -187,11 +187,10 @@ class MySeleniumTests(StaticLiveServerTestCase):
         super().tearDownClass()
 
 
-    #performs the sign up process
+    # Performs the sign up process
     def _signup(self, firstname, lastname, email, DOB, password, driver):
-        # driver.get("http://localhost:8000")
 
-        #accessing the sign up page
+        # Accessing the sign up page
         signup = driver.find_element(By.LINK_TEXT, "Sign Up")
         signup.click()
 
@@ -203,18 +202,23 @@ class MySeleniumTests(StaticLiveServerTestCase):
         confirmPassword_input = driver.find_element(By.ID, "id_password2")
         
         firstname_input.send_keys(firstname)
+        time.sleep(0.5)
         lastname_input.send_keys(lastname)
+        time.sleep(0.5)
         email_input.send_keys(email)
+        time.sleep(0.5)
         DOB_input.send_keys(DOB)
-        password_input.send_keys(password)
+        time.sleep(0.5)
+        password_input.send_keys(password)  
+        time.sleep(0.5)
         confirmPassword_input.send_keys(password)
+        time.sleep(0.5)
         confirmPassword_input.submit()
-        time.sleep(4)
+        
 
 
-    #performs the login process
+    # Performs the login process
     def _login(self, username, password, driver):
-        # driver.get(f"{self.live_server_url}")
 
         #accessing the login page
         login = driver.find_element(By.LINK_TEXT, "Login")
@@ -225,19 +229,18 @@ class MySeleniumTests(StaticLiveServerTestCase):
         password_input = driver.find_element(By.ID,"id_password")
        
         email_input.send_keys(username)
-        time.sleep(1)
+        time.sleep(0.5)
         password_input.send_keys(password)
-        time.sleep(1)
+        time.sleep(0.5)
         password_input.submit()
-        time.sleep(2)
 
-    #performs the logout process
+    # Performs the logout process
     def _logout(self, driver):
         logout = driver.find_element(By.XPATH, "/html/body/div/main/div/div[1]/nav/div/div/ul/li[5]")
         logout.click()
 
 
-    #performs the editing of user information
+    # Performs the editing of user information
     def _editing_info(self, first, last, email, DOB, hobby, driver):
 
         firstnameChange = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div[2]/input")
@@ -249,15 +252,21 @@ class MySeleniumTests(StaticLiveServerTestCase):
 
         firstnameChange.clear()
         firstnameChange.send_keys(first)
+        time.sleep(0.5)
         lastnameChange.clear()
         lastnameChange.send_keys(last)
+        time.sleep(0.5)
         emailChange.clear()
         emailChange.send_keys(email)
+        time.sleep(0.5)
         DOBChange.clear()
         DOBChange.send_keys(DOB)
+        time.sleep(0.5)
         HobbyTest.send_keys(f"{hobby}\ue007")
+        time.sleep(0.5)
         HobbyDescription = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div[6]/div[2]/input[2]")
         HobbyDescription.send_keys(f"This is the activity of {hobby}")
+        time.sleep(0.5)
         hobbySubmit = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div[6]/div[2]/button")
         time.sleep(2)
         hobbySubmit.click()
@@ -267,7 +276,7 @@ class MySeleniumTests(StaticLiveServerTestCase):
         submit.click()
  
 
-    #performs the changing of password
+    # Performs the changing of password
     def _changing_password(self, oldPass, newPass, driver):
         changePassword = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[2]/button")
         changePassword.click()
@@ -279,16 +288,20 @@ class MySeleniumTests(StaticLiveServerTestCase):
         submit = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[3]/div/div/div[3]/button[1]")
 
         currentPassword.send_keys(oldPass)
+        time.sleep(0.5)
         newPassword.send_keys(newPass)
+        time.sleep(0.5)
         confirmPassword.send_keys(newPass)
+        time.sleep(0.5)
         submit.click()
         time.sleep(2)
 
 
-    #performs the filtering of users by age
+    # Performs the filtering of users by age
     def _filtering_age(self, driver):
         search = driver.find_element(By.LINK_TEXT, "Search")
         search.click()
+        time.sleep(1)
 
         ageSliderLower = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div/input[1]")
         ageSliderUpper = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div/input[2]")
@@ -301,79 +314,79 @@ class MySeleniumTests(StaticLiveServerTestCase):
 
 
 
-    #performs the sending of a friend request
+    # Performs the sending of a friend request
     def _send_friend_request(self, driver):
         sendRequest = driver.find_element(By.CLASS_NAME, "btn-primary")
         sendRequest.click()
 
-
-
-    #performs the receiving of a friend request
+   
+    # Performs the receiving of a friend request
     def _receive_friend_request(self, driver):
-        sendRequest = driver.find_element(By.CLASS_NAME, "btn-success")
-        sendRequest.click()
+        requests = driver.find_element(By.XPATH, "/html/body/div/main/div/div[1]/nav/div/div/ul/li[1]/div/button")
+        requests.click()
+        time.sleep(1)
+
+        receiveRequest = driver.find_element(By.CLASS_NAME, "btn-success")
+        receiveRequest.click()
+        time.sleep(1)
 
 
-    #performs the showing of current friends
+    # Performs the showing of current friends
     def _show_friends(self, driver):
         currentFriends = driver.find_element(By.XPATH, "/html/body/div/main/div/div[1]/nav/div/div/ul/li[2]/div/button")
         currentFriends.click()
 
 
-    #performs the live testing of the application using selenium
+    # Performs the live testing of the application using selenium
     def test_liveserver(self):
         self.driver1.get(f"{self.live_server_url}")
         time.sleep(2)
 
-        #Creating an account
+        # Creating an account
         self._signup("James", "Smith", "Jamessmith@test.com", "10-09-1987", "seleniumPassword", self.driver1)
         time.sleep(2)
 
-        #Changing the users details 
+        # Changing the user's details 
         self.driver1.find_element(By.LINK_TEXT, "Profile Page").click()
         self._editing_info("Josh", "Brown", "ChangedEmail@test.com", "17-02-1984", "Running", self.driver1)
         time.sleep(2)
 
-        #Changing the password
+        # Changing the password
         self._changing_password("seleniumPassword", "passwordSelenium", self.driver1)
         time.sleep(2)
 
-        #Logging out of the account just created
+        # Logging out of the account just created
         self._logout(self.driver1)
         time.sleep(2)
 
-
-        #Logging back in to the account 
+        # Logging back in to the account 
         self._login("ChangedEmail@test.com", "passwordSelenium", self.driver1)
         time.sleep(2)
 
-
-        #search and filetering by age
+        # Search and filetering by age
         self._filtering_age(self.driver1)
         time.sleep(2)
 
-        #Sending a friend request
+        # Sending a friend request
         self._send_friend_request(self.driver1)
         time.sleep(2)
+        
+        # Returning to the home page
+        self.driver1.find_element(By.LINK_TEXT, "Home").click()
 
-        #Creating second browser
+        # Creating second browser
         self.driver2.get(f"{self.live_server_url}")
         time.sleep(2)
 
-        #Logging in to second account
+        # Logging in to second account
         self._login("Tomstar@testmail.com", "passwordTesting", self.driver2)
         time.sleep(2)
 
-        #accessing search 
-        friendRequests = self.driver2.find_element(By.LINK_TEXT, "Search")
-        friendRequests.click()
-        time.sleep(2)
-                
-        #accepting friend request
+        # Accepting friend request
         self._receive_friend_request(self.driver2)
         time.sleep(2)
 
-        #Showing current friends
+        # Showing current friends
         self._show_friends(self.driver1)
         self._show_friends(self.driver2)
         time.sleep(3)
