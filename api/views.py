@@ -1,21 +1,20 @@
 import json
 import sys
-from typing import List, Dict, Any, Union
-
+from typing import List
 from functools import wraps
 from django.contrib import auth
 from django.contrib.auth import authenticate, login as auth_login
 from django.http import HttpResponse, HttpRequest, JsonResponse
-from rest_framework.response import Response
 from rest_framework.decorators import api_view as require_http_methods
 from .models import User, Hobbies
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.utils.timezone import datetime
-from .forms import UserCreateForm, UserEditForm, PasswordEditForm, HobbiesForm, AuthenticationForm
+from .forms import UserCreateForm, HobbiesForm, AuthenticationForm
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
+
 class Hobby:
     def __init__(self, name: str, description: str):
         self.name = name

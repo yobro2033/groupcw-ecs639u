@@ -9,4 +9,3 @@ django-cors-headers
 djangorestframework
 Pillow==5.0.0
 requests
-jwt
