@@ -26,7 +26,6 @@ class UserCreateForm(UserCreationForm):
             'date_of_birth',
             'password1',
             'password2',
-            'username',
         ]
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter first name'}),

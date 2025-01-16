@@ -462,6 +462,7 @@ def update_profile(request: HttpRequest) -> JsonResponse:
             current_user = request.user
             data = request.data
 
+            current_user.username = data.get('email', current_user.email)
             current_user.first_name = data.get('first_name', current_user.first_name)
             current_user.last_name = data.get('last_name', current_user.last_name)
             current_user.email = data.get('email', current_user.email)
