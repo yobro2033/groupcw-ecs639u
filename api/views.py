@@ -15,7 +15,7 @@ from django.utils.timezone import datetime
 from .forms import UserCreateForm, UserEditForm, PasswordEditForm, HobbiesForm, AuthenticationForm
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
-
+from django.db import IntegrityError
 class Hobby:
     def __init__(self, name: str, description: str):
         self.name = name
@@ -138,8 +138,13 @@ def sign_up(request: HttpRequest) -> HttpResponse:
             email = data_form['email']
             data_form = data_form.copy()
             data_form['username'] = email
-            print(data_form)
             form = UserCreateForm(data_form)
+            
+            if data_form["password1"] != data_form["password2"]:
+                form.add_error('password1', 'Passwords do not match')
+                form.add_error('password2', 'Passwords do not match')
+                return render(request, 'registration/signup.html', {'form': form})
+            
             if User.objects.filter(email=email).exists():
                 form.add_error('email', 'Email is already in use')
                 return render(request, 'registration/signup.html', {'form': form})
@@ -149,12 +154,19 @@ def sign_up(request: HttpRequest) -> HttpResponse:
                 return render(request, 'registration/signup.html', {'form': form})
             
             if form.is_valid():
-                new_user = form.save()
-                hobbies = request.POST.getlist('hobbies')
-                new_user.hobbies.set(hobbies)
-                auth_login(request, new_user)
-                return redirect('home')
+                try:
+                    new_user = form.save()
+                    hobbies = request.POST.getlist('hobbies')
+                    new_user.hobbies.set(hobbies)
+                    user = authenticate(username=data_form["username"], password=data_form["password1"])
+                    auth_login(request, user)
+                    return redirect('home')
+                except IntegrityError as e:
+                    print(f"IntegrityError: {e}")
+                    form.add_error('username', 'Username already exists')
+                    return render(request, 'registration/signup.html', {'form': form})
             else:
+                print(f"Incorrect form: {form.errors}")
                 return render(request, 'registration/signup.html', {'form': form})
         else:
             form = UserCreateForm()
