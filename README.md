@@ -4,11 +4,11 @@ This template should be used as the starting point for your group coursework in 
 
 ## Contribution
 
-| Student ID | Name       | Assigned Task | Final Deliverable |
-| ---------- | ---------- | ------------- | ----------------- |
-| 210554416  | HongKai Yu | ------------- | ----------------- |
-| ---------- | ----       | ------------- | ----------------- |
-| ---------- | ----       | ------------- | ----------------- |
+| Student ID | Name        | Assigned Task | Final Deliverable |
+| ---------- | ----------  | ------------- | ----------------- |
+| 210554416  | HongKai Yu  | ------------- | ----------------- |
+| 220519250  | Demoy Witter| ------------- | ----------------- |
+| ---------- | ----        | ------------- | ----------------- |
 
 ## Local development
 
