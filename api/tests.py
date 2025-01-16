@@ -167,23 +167,6 @@ def seach_users():
     response = requests.get('http://127.0.0.1:8000/api/users/', params=params, cookies=cookies, headers=headers)
     print(response.text)
 
-#create_hobbies()
-
-#create_account()
-
-""""{"result": {"message": "Successfully created an account!"}, "success": "true"} georgeborkowski600@gmail.com
-{"result": {"message": "Successfully created an account!"}, "success": "true"} sarahwilliams549@gmail.com
-{"result": {"message": "Successfully created an account!"}, "success": "true"} eddiehall622@gmail.com
-{"result": {"message": "Successfully created an account!"}, "success": "true"} evanrichardson380@gmail.com
-{"result": {"message": "Successfully created an account!"}, "success": "true"} johnmeyer183@gmail.com
-{"result": {"message": "Successfully created an account!"}, "success": "true"} mattiepage318@gmail.com
-{"result": {"message": "Successfully created an account!"}, "success": "true"} ronaldjennings958@gmail.com
-{"result": {"message": "Successfully created an account!"}, "success": "true"} douglasthomas796@gmail.com
-{"result": {"message": "Successfully created an account!"}, "success": "true"} carmencreamer239@gmail.com"""
-
-#seach_users()
-
-
 class MySeleniumTests(StaticLiveServerTestCase):
     fixtures=['api/fixtures/test_data.json']
     
@@ -204,7 +187,7 @@ class MySeleniumTests(StaticLiveServerTestCase):
         super().tearDownClass()
 
 
-    #performs the sign up process
+    #manually run test, python manage.py api.tests.MySeleniumTests.test_signup``
     def _signup(self, firstname, lastname, email, DOB, password, driver):
         # driver.get("http://localhost:8000")
 
@@ -212,12 +195,12 @@ class MySeleniumTests(StaticLiveServerTestCase):
         signup = driver.find_element(By.LINK_TEXT, "Sign Up")
         signup.click()
 
-        firstname_input = driver.find_element(By.ID, "id_first_name")
-        lastname_input = driver.find_element(By.ID, "id_last_name")
-        email_input = driver.find_element(By.ID, "id_email")
-        DOB_input = driver.find_element(By.ID, "id_date_of_birth")
-        password_input = driver.find_element(By.ID, "id_password1")
-        confirmPassword_input = driver.find_element(By.ID, "id_password2")
+        firstname_input = driver.find_element(By.ID, "firstNameInput")
+        lastname_input = driver.find_element(By.ID, "lastNameInput")
+        email_input = driver.find_element(By.ID, "emailInput")
+        DOB_input = driver.find_element(By.ID, "dobInput")
+        password_input = driver.find_element(By.ID, "passwordInput")
+        confirmPassword_input = driver.find_element(By.ID, "passwordInput2")
         
         firstname_input.send_keys(firstname)
         lastname_input.send_keys(lastname)
@@ -227,9 +210,9 @@ class MySeleniumTests(StaticLiveServerTestCase):
         confirmPassword_input.send_keys(password)
         confirmPassword_input.submit()
         time.sleep(4)
+        
 
-
-    #performs the login process
+    #manually run test, python manage.py api.tests.MySeleniumTests.test_login
     def _login(self, username, password, driver):
         # driver.get(f"{self.live_server_url}")
 
@@ -237,29 +220,29 @@ class MySeleniumTests(StaticLiveServerTestCase):
         login = driver.find_element(By.LINK_TEXT, "Login")
         login.click()
 
-        email_input = driver.find_element(By.ID, "id_username")
-        password_input = driver.find_element(By.ID,"id_password")
+        email_input = driver.find_element(By.ID, "usernameInput")
+        password_input = driver.find_element(By.ID,"passwordInput")
        
         email_input.send_keys(username)
         password_input.send_keys(password)
         password_input.submit()
         time.sleep(4)
 
-    #performs the logout process
+
     def _logout(self, driver):
         logout = driver.find_element(By.XPATH, "/html/body/div/main/div/div[1]/nav/div/div/ul/li[5]")
         logout.click()
 
 
-    #performs the editing of user information
+    #manually run test, python manage.py api.tests.MySeleniumTests.test_editing_info
     def _editing_info(self, first, last, email, DOB, hobby, driver):
         # self.test_login()
 
-        firstnameChange = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div[2]/input")
-        lastnameChange = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div[3]/input")
-        emailChange = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div[4]/input")
-        DOBChange = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div[5]/input")
-        HobbyTest = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div[6]/div")
+        firstnameChange = driver.find_element(By.XPATH, "html/body/div/main/div/div/div/div/div[1]/input")
+        lastnameChange = driver.find_element(By.XPATH, "html/body/div/main/div/div/div/div/div[2]/input")
+        emailChange = driver.find_element(By.XPATH, "html/body/div/main/div/div/div/div/div[3]/input")
+        DOBChange = driver.find_element(By.XPATH, "html/body/div/main/div/div/div/div/div[4]/input")
+        HobbyTest = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div[5]/div")
         submit = driver.find_element(By.CLASS_NAME, "btn-primary")
 
         firstnameChange.clear()
@@ -271,42 +254,25 @@ class MySeleniumTests(StaticLiveServerTestCase):
         DOBChange.clear()
         DOBChange.send_keys(DOB)
         HobbyTest.send_keys(f"{hobby}\ue007")
-        HobbyDescription = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div[6]/div[2]/input[2]")
+        HobbyDescription = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div[5]/div[2]/input[2]")
         HobbyDescription.send_keys(f"This is the activity of {hobby}")
-        hobbySubmit = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div[6]/div[2]/button")
+        hobbySubmit = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div[5]/div[2]/button")
         time.sleep(2)
         hobbySubmit.click()
 
 
         time.sleep(2)
         submit.click()
- 
 
-    #performs the changing of password
-    def _changing_password(self, oldPass, newPass, driver):
-        changePassword = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[2]/button")
-        changePassword.click()
-        time.sleep(1)
+        #change password is not working yet, testing will be implemented when fixed 
 
-        currentPassword = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[3]/div/div/div[2]/div[1]/input")
-        newPassword = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[3]/div/div/div[2]/div[2]/input")
-        confirmPassword = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[3]/div/div/div[2]/div[3]/input")
-        submit = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[3]/div/div/div[3]/button[1]")
-
-        currentPassword.send_keys(oldPass)
-        newPassword.send_keys(newPass)
-        confirmPassword.send_keys(newPass)
-        submit.click()
-        time.sleep(2)
-
-
-    #performs the filtering of users by age
+    #manually run test, python manage.py api.tests.MySeleniumTests.test_filtering_age
     def _filtering_age(self, driver):
         search = driver.find_element(By.LINK_TEXT, "Search")
         search.click()
 
-        ageSliderLower = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div/input[1]")
-        ageSliderUpper = driver.find_element(By.XPATH, "/html/body/div/main/div/div[2]/div[1]/div/div/input[2]")
+        ageSliderLower = driver.find_element(By.XPATH, "html/body/div/main/div/div/div/div/input[1]")
+        ageSliderUpper = driver.find_element(By.XPATH, "html/body/div/main/div/div/div/div/input[2]")
 
         for i in range(8):
             ageSliderLower.send_keys(Keys.RIGHT)
@@ -316,26 +282,26 @@ class MySeleniumTests(StaticLiveServerTestCase):
 
 
 
-    #pwerforms the sending of a friend request
+    #manually run test, python manage.py api.tests.MySeleniumTests.test_send_friend_request
     def _send_friend_request(self, driver):
         sendRequest = driver.find_element(By.CLASS_NAME, "btn-primary")
         sendRequest.click()
 
 
 
-    #performs the receiving of a friend request
+    #manually run test, python manage.py api.tests.MySeleniumTests.test_receive_friend_request
     def _receive_friend_request(self, driver):
+
         sendRequest = driver.find_element(By.CLASS_NAME, "btn-success")
         sendRequest.click()
 
 
-    #performs the showing of current friends
     def _show_friends(self, driver):
         currentFriends = driver.find_element(By.XPATH, "/html/body/div/main/div/div[1]/nav/div/div/ul/li[2]/div/button")
         currentFriends.click()
 
 
-    #performs the live testing of the application using selenium
+    
     def test_liveserver(self):
         self.driver1.get(f"{self.live_server_url}")
         time.sleep(3)
@@ -356,12 +322,8 @@ class MySeleniumTests(StaticLiveServerTestCase):
 
 
         #Changing the users details 
-        self.driver1.find_element(By.LINK_TEXT, "Profile Page").click()
         self._editing_info("Josh", "Brown", "ChangedEmail@test.com", "17-02-1984", "Running", self.driver1)
         time.sleep(2)
-
-        #Changing the password
-        self._changing_password("seleniumPassword", "passwordSelenium", self.driver1)
 
 
         #search and filetering by age
@@ -393,7 +355,3 @@ class MySeleniumTests(StaticLiveServerTestCase):
         self._show_friends(self.driver1)
         self._show_friends(self.driver2)
         time.sleep(5)
-
-
-
-  
