@@ -462,6 +462,9 @@ def update_profile(request: HttpRequest) -> JsonResponse:
             current_user = request.user
             data = request.data
 
+            if current_user.email != data.get('email') and User.objects.filter(email=data.get('email')).exists():
+                return JsonResponse({'error': 'Email is already in use', 'success': 'false'}, status=400)
+
             current_user.username = data.get('email', current_user.email)
             current_user.first_name = data.get('first_name', current_user.first_name)
             current_user.last_name = data.get('last_name', current_user.last_name)
