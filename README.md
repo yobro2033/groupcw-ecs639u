@@ -49,8 +49,9 @@ This template should be used as the starting point for your group coursework in 
 
 ## Super User
 
-User ID: admin
-Password: JohmDoe2024Gr17
+| UserName | Password |
+| -------- | -------- |
+| admin | JohmDoe2024Gr17 |
 
 ## URL for Deploy
 
