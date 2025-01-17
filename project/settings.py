@@ -197,7 +197,7 @@ AUTH_USER_MODEL = 'api.User'
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:8000",
-    "https://django-psql-persistent-web-apps.apps.a.comp-teach.qmul.ac.uk",
+    "https://group17-hobbies-app.apps.a.comp-teach.qmul.ac.uk",
     "http://127.0.0.1:8000",
     "https://127.0.0.1:8000",
 ]
