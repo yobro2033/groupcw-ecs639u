@@ -9,7 +9,7 @@ This template should be used as the starting point for your group coursework in 
 | 210554416  | HongKai Yu     | Create statics image path and organise views.py | Create statics image path and organise views.py |
 | 220519250  | Demoy Witter   | Testing/ Create test cases                      | Testing/ Create test cases                      |
 | 220364926  | Quoc Viet Phan | Front/Backend, database                         | Front/Backend, database                         |
-| ---------- | ----------     | Login/signup html template                      | Login/signup html template                      |
+| 210979480 | NING LIU     | Login/signup html template                      | Login/signup html template                      |
 
 ## Deployment URL
 
