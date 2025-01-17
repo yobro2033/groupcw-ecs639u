@@ -55,5 +55,5 @@ urlpatterns = [
     # path('api/profile/update_image/', views.update_profile_image, name='update_profile_image'),
     path('api/profile/change_password/', views.change_password, name='change_password'),
 
-    re_path(r'^.*$', views.catchall_not_found, name='catchall'),
+    #re_path(r'^.*$', views.catchall_not_found, name='catchall'),
 ]
