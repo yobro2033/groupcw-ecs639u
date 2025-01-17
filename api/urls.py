@@ -24,8 +24,6 @@ urlpatterns = [
 
     path('', views.home,name='home'),
 
-    #path('admin/', admin.site.urls),
-
     path('login/', views.login, name='login'),
     path('signup/', views.sign_up, name='signup'),
 
@@ -52,7 +50,6 @@ urlpatterns = [
     path('api/received_request/remove/<int:user_id>/', views.remove_received_request, name='remove_received_request'),
 
     path('api/profile/update/', views.update_profile, name='update_profile'),
-    # path('api/profile/update_image/', views.update_profile_image, name='update_profile_image'),
     path('api/profile/change_password/', views.change_password, name='change_password'),
 
     # do re_path to catch all other urls apart from anything start with /admin
