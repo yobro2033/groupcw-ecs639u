@@ -3,7 +3,7 @@ import time
 from django.test import TestCase
 import requests, names, random
 
-#from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
@@ -167,7 +167,7 @@ def seach_users():
     response = requests.get('http://127.0.0.1:8000/api/users/', params=params, cookies=cookies, headers=headers)
     print(response.text)
 
-"""class MySeleniumTests(StaticLiveServerTestCase):
+class MySeleniumTests(StaticLiveServerTestCase):
     fixtures=['api/fixtures/test_data.json']
     
     @classmethod
@@ -389,4 +389,4 @@ def seach_users():
         # Showing current friends
         self._show_friends(self.driver1)
         self._show_friends(self.driver2)
-        time.sleep(3)"""
+        time.sleep(3)

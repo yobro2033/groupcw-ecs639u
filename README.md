@@ -6,9 +6,10 @@ This template should be used as the starting point for your group coursework in 
 
 | Student ID | Name        | Assigned Task | Final Deliverable |
 | ---------- | ----------  | ------------- | ----------------- |
-| 210554416  | HongKai Yu  | ------------- | ----------------- |
-| 220519250  | Demoy Witter| ------------- | ----------------- |
-| ---------- | ----        | ------------- | ----------------- |
+| 210554416  | HongKai Yu  | Create statics image path and organise views.py  | Create statics image path and organise views.py |
+| 220519250  | Demoy Witter | Testing/ Create test cases | Testing/ Create test cases |
+| 220364926  | Quoc Viet Phan | Front/Backend, database | Front/Backend, database |
+| ---------- | ----------  | Login/signup html template | Login/signup html template |
 
 ## Local development
 
