@@ -55,5 +55,6 @@ urlpatterns = [
     # path('api/profile/update_image/', views.update_profile_image, name='update_profile_image'),
     path('api/profile/change_password/', views.change_password, name='change_password'),
 
-    #re_path(r'^.*$', views.catchall_not_found, name='catchall'),
+    # do re_path to catch all other urls apart from anything start with /admin
+    re_path(r'^(?!admin).*$', views.catchall_not_found, name='catchall'),
 ]
