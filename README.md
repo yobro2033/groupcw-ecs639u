@@ -11,6 +11,10 @@ This template should be used as the starting point for your group coursework in 
 | 220364926  | Quoc Viet Phan | Front/Backend, database                         | Front/Backend, database                         |
 | ---------- | ----------     | Login/signup html template                      | Login/signup html template                      |
 
+## Deployment URL
+
+https://group17-hobbies-app.apps.a.comp-teach.qmul.ac.uk/
+
 ## User list
 
 | UserName | Password |
@@ -52,10 +56,6 @@ This template should be used as the starting point for your group coursework in 
 | UserName | Password |
 | -------- | -------- |
 | admin | JohmDoe2024Gr17 |
-
-## URL for Deploy
-
-https://group17-hobbies-app.apps.a.comp-teach.qmul.ac.uk/
 
 ## Local development
 
