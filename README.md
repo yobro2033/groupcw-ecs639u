@@ -14,7 +14,7 @@ This template should be used as the starting point for your group coursework in 
 ## User list
 
 | UserName | Password |
-
+| -------- | -------- |
 | alan.schwartz@qmul.ac.uk | blueberry42 |
 | raymond.hanna@qmul.ac.uk | summer2023 |
 | jamal.wiley@qmul.ac.uk | applejuice1 |
