@@ -4,12 +4,57 @@ This template should be used as the starting point for your group coursework in 
 
 ## Contribution
 
-| Student ID | Name        | Assigned Task | Final Deliverable |
-| ---------- | ----------  | ------------- | ----------------- |
-| 210554416  | HongKai Yu  | Create statics image path and organise views.py  | Create statics image path and organise views.py |
-| 220519250  | Demoy Witter | Testing/ Create test cases | Testing/ Create test cases |
-| 220364926  | Quoc Viet Phan | Front/Backend, database | Front/Backend, database |
-| ---------- | ----------  | Login/signup html template | Login/signup html template |
+| Student ID | Name           | Assigned Task                                   | Final Deliverable                               |
+| ---------- | -------------- | ----------------------------------------------- | ----------------------------------------------- |
+| 210554416  | HongKai Yu     | Create statics image path and organise views.py | Create statics image path and organise views.py |
+| 220519250  | Demoy Witter   | Testing/ Create test cases                      | Testing/ Create test cases                      |
+| 220364926  | Quoc Viet Phan | Front/Backend, database                         | Front/Backend, database                         |
+| ---------- | ----------     | Login/signup html template                      | Login/signup html template                      |
+
+## User list
+
+| UserName | Password |
+
+| alan.schwartz@qmul.ac.uk | blueberry42 |
+| raymond.hanna@qmul.ac.uk | summer2023 |
+| jamal.wiley@qmul.ac.uk | applejuice1 |
+| fatima.yates@qmul.ac.uk | piano12345 |
+| josh.melton@qmul.ac.uk | sunshine88 |
+| hasnain.cervantes@qmul.ac.uk | chocolate56 |
+| frederic.zuniga@qmul.ac.uk | greenhouse9 |
+| hussain.hansen@qmul.ac.uk | happyday7 |
+| kieron.tanner@qmul.ac.uk | tiger2024 |
+| dominic.chase@qmul.ac.uk | guitar77 |
+| bill.valentine@qmul.ac.uk | watermelon3 |
+| jorge.nolan@qmul.ac.uk | rainbow2010 |
+| josiah.reynolds@qmul.ac.uk | soccerball4 |
+| kadie.rasmussen@qmul.ac.uk | winter2022 |
+| sophia.kaufman@qmul.ac.uk | butterfly56 |
+| zara.francis@qmul.ac.uk | mountain33 |
+| ashton.casey@qmul.ac.uk | snowflake21 |
+| elif.osborn@qmul.ac.uk | puzzle8game |
+| leah.fuller@qmul.ac.uk | balloon45 |
+| ilyas.rubio@qmul.ac.uk | lovelyday1 |
+| zuzanna.horne@qmul.ac.uk | blueSky9 |
+| laurence.wilkins@qmul.ac.uk | carrot202 |
+| macy.barrett@qmul.ac.uk | rainyDay7 |
+| zachariah.newman@qmul.ac.uk | starfish8 |
+| georgie.matthams@qmul.ac.uk | bookworm2 |
+| jed.mcbride@qmul.ac.uk | cookie22 |
+| kamran.romero@qmul.ac.uk | mountain4 |
+| kian.carlson@qmul.ac.uk | treehouse3 |
+| gladys.swanson@qmul.ac.uk | soccerball3 |
+| sylvie.gibbons@qmul.ac.uk | jellyfish6 |
+| jane.doe@qmul.ac.uk | fillerpassword |
+
+## Super User
+
+User ID: admin
+Password: JohmDoe2024Gr17
+
+## URL for Deploy
+
+https://group17-hobbies-app.apps.a.comp-teach.qmul.ac.uk/
 
 ## Local development
 
